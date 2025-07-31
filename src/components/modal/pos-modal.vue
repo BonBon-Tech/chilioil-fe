@@ -36,6 +36,104 @@
           </button>
         </div>
         <div class="modal-body">
+          <div>
+            <div
+                id="printable-receipt"
+                :style="{
+                  width: '70mm',
+                  margin: '0',
+                  padding: '0',
+                  background: '#fff',
+                  fontFamily: 'times new roman, serif',
+                  fontSize: '6px',
+                  lineHeight: '1.2',
+                  textAlign: 'center'
+                }"
+            >
+              <div style="margin:0;padding:0;">
+                <img
+                    src="@/assets/img/logo-main.png"
+                    width="80"
+                    height="24"
+                    alt="Receipt Logo"
+                    style="display:block;margin:0 auto 2px auto;padding:0;"
+                    id="receipt-logo"
+                />
+                <div id="company-name">
+                  Jajaneun Chillioil x Sate Nagihinxx
+                </div>
+              </div>
+              <div>
+                <div id="information-name">chilioilxsatenagihin@gmail.com</div>
+                <div id="information-name">085117569398</div>
+              </div>
+              <div id="separator">
+                ----------------------------------------------------------
+              </div>
+              <table id="width-58">
+                <tr>
+                  <td>Name</td>
+                  <td>:</td>
+                  <td>{{ customerName }}</td>
+                </tr>
+                <tr>
+                  <td>Ivoice</td>
+                  <td>:</td>
+                  <td>{{ transactionData?.code }}</td>
+                </tr>
+                <tr>
+                  <td>Date</td>
+                  <td>:</td>
+                  <td>{{ formattedDate }}</td>
+                </tr>
+              </table>
+              <div id="separator">
+                ----------------------------------------------------------
+              </div>
+              <table id="width-58">
+                <thead>
+                <tr id="width-58">
+                  <th>No</th>
+                  <th colspan="3">Item</th>
+                  <th>Qty</th>
+                  <th colspan="2">Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr
+                    v-for="(item, index) in transactionData?.transaction_items || []"
+                    :key="item.product_id"
+                    id="width-58"
+                >
+                  <td id="text-center">{{ index + 1 }}</td>
+                  <td colspan="3" style="padding:0;">{{ item.name || item.product_name || item.product_id }}</td>
+                  <td id="text-center">{{ item.qty ?? item.quantity ?? 0 }}</td>
+                  <td colspan="2" id="text-center">Rp{{ item.price * (item.qty ?? 0) }}</td>
+                </tr>
+                </tbody>
+              </table>
+              <div id="separator">
+                ----------------------------------------------------------
+              </div>
+              <table class="width-58">
+                <tr class="width-58">
+                  <td colspan="2" style="padding:0;">Sub Total</td>
+                  <td colspan="2" style="text-align:right;padding:0;">Rp{{ subTotal }}</td>
+                </tr>
+                <tr class="width-58">
+                  <td colspan="2" style="padding:0;">Total Bill</td>
+                  <td colspan="2" style="text-align:right;padding:0;">Rp{{ subTotal }}</td>
+                </tr>
+                <tr class="width-58">
+                  <td colspan="2" style="padding:0;">Payment</td>
+                  <td colspan="2" style="text-align:right;padding:0;">{{ transactionData?.payment_type || '-' }}</td>
+                </tr>
+              </table>
+              <div id="company-name">
+                Thank you!
+              </div>
+            </div>
+          </div>
           <!-- Commented: original printable-receipt with classes -->
           <!--
           <div id="printable-receipt">
@@ -112,216 +210,117 @@
   <!-- /Print Receipt -->
 
   <div>
-    <div>
-      <div
-          id="printable-receipt"
-          :style="{
-        width: '70mm',
-        margin: '0',
-        padding: '0',
-        background: '#fff',
-        fontFamily: 'times new roman, serif',
-        fontSize: '6px',
-        lineHeight: '1.2',
-        textAlign: 'center'
-      }"
-      >
-        <div style="margin:0;padding:0;">
-          <img
-              src="@/assets/img/logo-main.png"
-              width="80"
-              height="24"
-              alt="Receipt Logo"
-              style="display:block;margin:0 auto 2px auto;padding:0;"
-              id="receipt-logo"
-          />
-          <div id="company-name">
-            Jajaneun Chillioil x Sate Nagihinxx
-          </div>
-        </div>
-        <div>
-          <div id="information-name">chilioilxsatenagihin@gmail.com</div>
-          <div id="information-name">085117569398</div>
-        </div>
-        <div id="separator">
-          ----------------------------------------------------------
-        </div>
-        <table id="width-58">
-          <tr>
-            <td>Name</td>
-            <td>:</td>
-            <td>{{ customerName }}</td>
-          </tr>
-          <tr>
-            <td>Ivoice</td>
-            <td>:</td>
-            <td>{{ transactionData?.code }}</td>
-          </tr>
-          <tr>
-            <td>Date</td>
-            <td>:</td>
-            <td>{{ formattedDate }}</td>
-          </tr>
-        </table>
-        <div id="separator">
-          ----------------------------------------------------------
-        </div>
-        <table id="width-58">
-          <thead>
-          <tr id="width-58">
-            <th>No</th>
-            <th colspan="3">Item</th>
-            <th>Qty</th>
-            <th colspan="2">Total</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr
-              v-for="(item, index) in transactionData?.transaction_items || []"
-              :key="item.product_id"
-              id="width-58"
-          >
-            <td id="text-center">{{ index + 1 }}</td>
-            <td colspan="3" style="padding:0;">{{ item.name || item.product_name || item.product_id }}</td>
-            <td id="text-center">{{ item.qty ?? item.quantity ?? 0 }}</td>
-            <td colspan="2" id="text-center">Rp{{ item.price * (item.qty ?? 0) }}</td>
-          </tr>
-          </tbody>
-        </table>
-        <div id="separator">
-          ----------------------------------------------------------
-        </div>
-        <table class="width-58">
-          <tr class="width-58">
-            <td colspan="2" style="padding:0;">Sub Total</td>
-            <td colspan="2" style="text-align:right;padding:0;">Rp{{ subTotal }}</td>
-          </tr>
-          <tr class="width-58">
-            <td colspan="2" style="padding:0;">Total Bill</td>
-            <td colspan="2" style="text-align:right;padding:0;">Rp{{ subTotal }}</td>
-          </tr>
-          <tr class="width-58">
-            <td colspan="2" style="padding:0;">Payment</td>
-            <td colspan="2" style="text-align:right;padding:0;">{{ transactionData?.payment_type || '-' }}</td>
-          </tr>
-        </table>
-        <div id="company-name">
-          Thank you!
-        </div>
-      </div>
-    </div>
-<!--    <div>-->
-<!--    <div-->
-<!--      id="printable-receipt"-->
-<!--      class="printable-receipt"-->
-<!--      :style="{-->
-<!--        width: '70mm',-->
-<!--        margin: '0',-->
-<!--        padding: '0',-->
-<!--        background: '#fff',-->
-<!--        fontFamily: 'times new roman, serif',-->
-<!--        fontSize: '6px',-->
-<!--        lineHeight: '1.2',-->
-<!--        textAlign: 'center'-->
-<!--      }"-->
-<!--    >-->
-<!--      <div class="receipt-header" style="margin:0;padding:0;">-->
-<!--        <img-->
-<!--          src="@/assets/img/logo-main.png"-->
-<!--          width="80"-->
-<!--          height="24"-->
-<!--          alt="Receipt Logo"-->
-<!--          style="display:block;margin:0 auto 2px auto;padding:0;"-->
-<!--          class="receipt-logo"-->
-<!--        />-->
-<!--        <div class="company-name">-->
-<!--          Jajaneun Chillioil x Sate Nagihin-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <div class="information-store">chilioilxsatenagihin@gmail.com</div>-->
-<!--      <div class="information-store">085117569398</div>-->
-<!--      <div class="separator">-->
-<!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
-<!--      </div>-->
+    <!--    <div>-->
+    <!--    <div-->
+    <!--      id="printable-receipt"-->
+    <!--      class="printable-receipt"-->
+    <!--      :style="{-->
+    <!--        width: '70mm',-->
+    <!--        margin: '0',-->
+    <!--        padding: '0',-->
+    <!--        background: '#fff',-->
+    <!--        fontFamily: 'times new roman, serif',-->
+    <!--        fontSize: '6px',-->
+    <!--        lineHeight: '1.2',-->
+    <!--        textAlign: 'center'-->
+    <!--      }"-->
+    <!--    >-->
+    <!--      <div class="receipt-header" style="margin:0;padding:0;">-->
+    <!--        <img-->
+    <!--          src="@/assets/img/logo-main.png"-->
+    <!--          width="80"-->
+    <!--          height="24"-->
+    <!--          alt="Receipt Logo"-->
+    <!--          style="display:block;margin:0 auto 2px auto;padding:0;"-->
+    <!--          class="receipt-logo"-->
+    <!--        />-->
+    <!--        <div class="company-name">-->
+    <!--          Jajaneun Chillioil x Sate Nagihin-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--      <div class="information-store">chilioilxsatenagihin@gmail.com</div>-->
+    <!--      <div class="information-store">085117569398</div>-->
+    <!--      <div class="separator">-->
+    <!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+    <!--      </div>-->
 
-<!--      <div class="label-transaction-info">Name</div>-->
-<!--      <div class="label-separator">:</div>-->
-<!--      <div class="value-transaction-info">{{ customerName }}</div>-->
+    <!--      <div class="label-transaction-info">Name</div>-->
+    <!--      <div class="label-separator">:</div>-->
+    <!--      <div class="value-transaction-info">{{ customerName }}</div>-->
 
-<!--      <div class="label-transaction-info">Name</div>-->
-<!--      <div class="label-separator">:</div>-->
-<!--      <div class="value-transaction-info">{{ customerName }}</div>-->
+    <!--      <div class="label-transaction-info">Name</div>-->
+    <!--      <div class="label-separator">:</div>-->
+    <!--      <div class="value-transaction-info">{{ customerName }}</div>-->
 
-<!--      <div class="label-transaction-info">Name</div>-->
-<!--      <div class="label-separator">:</div>-->
-<!--      <div class="value-transaction-info">{{ customerName }}</div>-->
-<!--      <div class="row">-->
-<!--        -->
-<!--        <div class="label-separator">:</div>-->
-<!--        <div class="value-transaction-info">{{ customerName }}</div>-->
-<!--      </div>-->
-<!--      <div class="row">-->
-<!--        <div class="label-transaction-info">Invoice</div>-->
-<!--        <div class="label-separator">:</div>-->
-<!--        <div class="value-transaction-info">{{ transactionData?.code }}</div>-->
-<!--      </div>-->
-<!--      <div class="row">-->
-<!--        <div class="label-transaction-info">Date</div>-->
-<!--        <div class="label-separator">:</div>-->
-<!--        <div class="value-transaction-info">{{ formattedDate }}</div>-->
-<!--      </div>-->
-<!--      <div class="separator">-->
-<!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
-<!--      </div>-->
-<!--      <div class="row">-->
-<!--        <div class="table-number">No</div>-->
-<!--        <div class="table-item">Item</div>-->
-<!--        <div class="table-qty">Qty</div>-->
-<!--        <div class="table-total">Total</div>-->
-<!--      </div>-->
-<!--      <div-->
-<!--        v-for="(item, index) in transactionData?.transaction_items || []"-->
-<!--        :key="item.product_id"-->
-<!--        class="row"-->
-<!--      >-->
-<!--        <div class="table-number-value">{{ index + 1 }}</div>-->
-<!--        <div class="table-item">{{ item.name }}</div>-->
-<!--        <div class="table-qty-value">{{ item.qty ?? 0 }}</div>-->
-<!--        <div class="table-total">Rp{{ item.price * (item.qty ?? 0) }}</div>-->
-<!--      </div>-->
-<!--      <div-->
-<!--          class="row"-->
-<!--      >-->
-<!--        <div class="table-number-value">1</div>-->
-<!--        <div class="table-item">Wonton Bakso Basi Besar Cakung Bobi</div>-->
-<!--        <div class="table-qty-value">100</div>-->
-<!--        <div class="table-total">Rp1.700.000</div>-->
-<!--      </div>-->
-<!--      <div class="separator">-->
-<!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
-<!--      </div>-->
-<!--      <div class="separator">-->
-<!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
-<!--      </div>-->
-<!--      &lt;!&ndash; Totals &ndash;&gt;-->
-<!--      <div>-->
-<!--        <span class="label">Sub Total</span>-->
-<!--        <span class="value">Rp{{ subTotal }}</span>-->
-<!--      </div>-->
-<!--      <div>-->
-<!--        <span class="label">Total Bill</span>-->
-<!--        <span class="value">Rp{{ subTotal }}</span>-->
-<!--      </div>-->
-<!--      <div>-->
-<!--        <span class="label">Payment</span>-->
-<!--        <span class="value">{{ transactionData?.payment_type || '-' }}</span>-->
-<!--      </div>-->
-<!--      <div id="company-name" class="company-name" style="margin-top:4px;">-->
-<!--        Thank you!-->
-<!--      </div>-->
-<!--    </div>-->
+    <!--      <div class="label-transaction-info">Name</div>-->
+    <!--      <div class="label-separator">:</div>-->
+    <!--      <div class="value-transaction-info">{{ customerName }}</div>-->
+    <!--      <div class="row">-->
+    <!--        -->
+    <!--        <div class="label-separator">:</div>-->
+    <!--        <div class="value-transaction-info">{{ customerName }}</div>-->
+    <!--      </div>-->
+    <!--      <div class="row">-->
+    <!--        <div class="label-transaction-info">Invoice</div>-->
+    <!--        <div class="label-separator">:</div>-->
+    <!--        <div class="value-transaction-info">{{ transactionData?.code }}</div>-->
+    <!--      </div>-->
+    <!--      <div class="row">-->
+    <!--        <div class="label-transaction-info">Date</div>-->
+    <!--        <div class="label-separator">:</div>-->
+    <!--        <div class="value-transaction-info">{{ formattedDate }}</div>-->
+    <!--      </div>-->
+    <!--      <div class="separator">-->
+    <!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+    <!--      </div>-->
+    <!--      <div class="row">-->
+    <!--        <div class="table-number">No</div>-->
+    <!--        <div class="table-item">Item</div>-->
+    <!--        <div class="table-qty">Qty</div>-->
+    <!--        <div class="table-total">Total</div>-->
+    <!--      </div>-->
+    <!--      <div-->
+    <!--        v-for="(item, index) in transactionData?.transaction_items || []"-->
+    <!--        :key="item.product_id"-->
+    <!--        class="row"-->
+    <!--      >-->
+    <!--        <div class="table-number-value">{{ index + 1 }}</div>-->
+    <!--        <div class="table-item">{{ item.name }}</div>-->
+    <!--        <div class="table-qty-value">{{ item.qty ?? 0 }}</div>-->
+    <!--        <div class="table-total">Rp{{ item.price * (item.qty ?? 0) }}</div>-->
+    <!--      </div>-->
+    <!--      <div-->
+    <!--          class="row"-->
+    <!--      >-->
+    <!--        <div class="table-number-value">1</div>-->
+    <!--        <div class="table-item">Wonton Bakso Basi Besar Cakung Bobi</div>-->
+    <!--        <div class="table-qty-value">100</div>-->
+    <!--        <div class="table-total">Rp1.700.000</div>-->
+    <!--      </div>-->
+    <!--      <div class="separator">-->
+    <!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+    <!--      </div>-->
+    <!--      <div class="separator">-->
+    <!--        &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+    <!--      </div>-->
+    <!--      &lt;!&ndash; Totals &ndash;&gt;-->
+    <!--      <div>-->
+    <!--        <span class="label">Sub Total</span>-->
+    <!--        <span class="value">Rp{{ subTotal }}</span>-->
+    <!--      </div>-->
+    <!--      <div>-->
+    <!--        <span class="label">Total Bill</span>-->
+    <!--        <span class="value">Rp{{ subTotal }}</span>-->
+    <!--      </div>-->
+    <!--      <div>-->
+    <!--        <span class="label">Payment</span>-->
+    <!--        <span class="value">{{ transactionData?.payment_type || '-' }}</span>-->
+    <!--      </div>-->
+    <!--      <div id="company-name" class="company-name" style="margin-top:4px;">-->
+    <!--        Thank you!-->
+    <!--      </div>-->
+    <!--    </div>-->
   </div>
-  <a href="javascript:void(0);" class="btn btn-primary" @click="doPrint">Print Receipt</a>
 
   <!-- Products -->
   <div class="modal fade modal-default pos-modal" id="products" aria-labelledby="products">
