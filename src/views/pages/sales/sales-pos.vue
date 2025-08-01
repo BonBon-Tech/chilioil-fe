@@ -14,14 +14,6 @@
         >
         <a
           href="javascript:void(0);"
-          class="btn btn-info"
-          @click="resetProductFilter"
-          ><span class="me-1 d-flex align-items-center"
-            ><vue-feather type="rotate-cw" class="feather-16"></vue-feather></span
-          >Reset</a
-        >
-        <a
-          href="javascript:void(0);"
           class="btn btn-primary"
           data-bs-toggle="modal"
           data-bs-target="#recents"
@@ -33,6 +25,43 @@
 
       <div class="row align-items-start pos-wrapper">
         <div class="col-md-12 col-lg-8">
+          <!-- Search and Reset Controls - Better positioned -->
+          <div class="card table-list-card border-0 mb-3">
+            <div class="card-body">
+              <div class="table-top">
+                <div class="search-set">
+                  <div class="search-input">
+                    <input
+                      type="text"
+                      placeholder="Search Products"
+                      class="form-control"
+                      v-model="searchProductName"
+                      @keyup.enter="searchProducts"
+                    />
+                    <a
+                      href="javascript:void(0);"
+                      class="btn btn-searchset"
+                      @click="searchProducts"
+                    >
+                      <vue-feather type="search" class="feather-search"></vue-feather>
+                    </a>
+                  </div>
+                </div>
+                <div class="search-path">
+                  <a
+                    href="javascript:void(0);"
+                    class="btn btn-primary"
+                    @click="resetProductFilter"
+                  >
+                    <span class="me-1 d-flex align-items-center">
+                      <vue-feather type="rotate-cw" class="feather-16"></vue-feather>
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="pos-categories tabs_wrapper">
             <h5>Categories</h5>
             <p>Select From Below Categories</p>
@@ -142,38 +171,20 @@
               <h6>Customer Information</h6>
               <div class="input-block d-flex align-items-center">
                 <div class="flex-grow-1">
-                  <custom-select
-                    :options="Walk"
-                    id="walkin"
-                    placeholder="Walk in Customer"
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Customer Name"
+                    v-model="customerName"
                   />
                 </div>
-                <a
-                  href="javascript:void(0);"
-                  class="btn btn-primary btn-icon"
-                  data-bs-toggle="modal"
-                  data-bs-target="#create"
-                  ><vue-feather type="user-plus" class="feather-16"></vue-feather
-                ></a>
-              </div>
-              <div class="input-block d-flex align-items-center">
-                  <div class="flex-grow-1">
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Search Products"
-                      v-model="searchProductName"
-                      @keyup.enter="searchProducts"
-                    />
-                  </div>
-
-                  <a
-                    class="btn btn-secondary btn-icon"
-                    type="button"
-                    @click="searchProducts"
-                  >
-                    <vue-feather type="search" class="feather-16"></vue-feather>
-                  </a>
+<!--                <a-->
+<!--                  href="javascript:void(0);"-->
+<!--                  class="btn btn-primary btn-icon"-->
+<!--                  data-bs-toggle="modal"-->
+<!--                  data-bs-target="#create"-->
+<!--                  ><vue-feather type="user-plus" class="feather-16"></vue-feather-->
+<!--                ></a>-->
               </div>
             </div>
 
@@ -194,57 +205,91 @@
                 <div
                   v-for="item in cart"
                   :key="item.id"
-                  class="product-list d-flex align-items-center justify-content-between"
+                  class="product-list-container"
                 >
-                  <div
-                    class="d-flex align-items-center product-info"
-                  >
-                    <a href="javascript:void(0);" class="img-bg">
-                      <img
-                        :src="item.image_url"
-                        alt="Products"
-                        style="width:48px;height:48px;object-fit:contain;"
+                  <div class="product-list d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center product-info">
+                      <a href="javascript:void(0);" class="img-bg">
+                        <img
+                          :src="item.image_url"
+                          alt="Products"
+                          style="width:48px;height:48px;object-fit:contain;"
+                        />
+                      </a>
+                      <div class="info">
+                        <span>{{ item.sku || item.code || item.id }}</span>
+                        <h6><a href="javascript:void(0);">{{ item.name }}</a></h6>
+                        <div v-if="item.note" style="font-size:11px;color:#666;font-style:italic;margin:2px 0;">
+                          Note: {{ item.note }}
+                        </div>
+                        <p>Rp{{ item.price }}</p>
+                      </div>
+                    </div>
+                    <div class="qty-item text-center">
+                      <a
+                        href="javascript:void(0);"
+                        class="dec d-flex justify-content-center align-items-center"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="minus"
+                        @click="decrementQty(item)"
+                      ><vue-feather type="minus-circle" class="feather-14"></vue-feather></a>
+                      <input
+                        type="text"
+                        class="form-control text-center"
+                        name="qty"
+                        :value="item.qty"
+                        readonly
                       />
-                    </a>
-                    <div class="info">
-                      <span>{{ item.sku || item.code || item.id }}</span>
-                      <h6><a href="javascript:void(0);">{{ item.name }}</a></h6>
-                      <p>Rp{{ item.price }}</p>
+                      <a
+                        href="javascript:void(0);"
+                        class="inc d-flex justify-content-center align-items-center"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="plus"
+                        @click="incrementQty(item)"
+                      ><vue-feather type="plus-circle" class="feather-14"></vue-feather></a>
+                    </div>
+                    <div class="d-flex align-items-center action">
+                      <a
+                        class="btn-icon note-icon me-2"
+                        href="javascript:void(0);"
+                        @click="toggleNoteInput(item)"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Add Note"
+                      >
+                        <vue-feather type="edit-3" class="feather-14"></vue-feather>
+                      </a>
+                      <a
+                        class="btn-icon delete-icon confirm-text"
+                        href="javascript:void(0);"
+                        @click="removeFromCart(item)"
+                      >
+                        <vue-feather type="trash-2" class="feather-14"></vue-feather>
+                      </a>
                     </div>
                   </div>
-                  <div class="qty-item text-center">
-                    <a
-                      href="javascript:void(0);"
-                      class="dec d-flex justify-content-center align-items-center"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      title="minus"
-                      @click="decrementQty(item)"
-                    ><vue-feather type="minus-circle" class="feather-14"></vue-feather></a>
-                    <input
-                      type="text"
-                      class="form-control text-center"
-                      name="qty"
-                      :value="item.qty"
-                      readonly
-                    />
-                    <a
-                      href="javascript:void(0);"
-                      class="inc d-flex justify-content-center align-items-center"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      title="plus"
-                      @click="incrementQty(item)"
-                    ><vue-feather type="plus-circle" class="feather-14"></vue-feather></a>
-                  </div>
-                  <div class="d-flex align-items-center action">
-                    <a
-                      class="btn-icon delete-icon confirm-text"
-                      href="javascript:void(0);"
-                      @click="removeFromCart(item)"
-                    >
-                      <vue-feather type="trash-2" class="feather-14"></vue-feather>
-                    </a>
+                  <!-- Note input - appears when note button is clicked -->
+                  <div v-if="item.showNoteInput" class="mt-2" style="width:100%;">
+                    <div class="input-group input-group-sm">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Add your note here..."
+                        v-model="item.note"
+                        @keyup.enter="saveNote(item)"
+                        @blur="saveNote(item)"
+                        :ref="`noteInput_${item.id}`"
+                      />
+                      <button
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        @click="saveNote(item)"
+                      >
+                        <vue-feather type="check" class="feather-12"></vue-feather>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -352,6 +397,39 @@
     data-bs-target="#payment-completed"
   ></button>
   <pos-modal @next-order="resetOrder"></pos-modal>
+
+  <!-- Note Modal -->
+  <div class="modal fade" id="note-modal" tabindex="-1" aria-labelledby="note-modal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Note</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Product: {{ selectedItem?.name }}</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Note</label>
+            <textarea
+              class="form-control"
+              rows="3"
+              v-model="noteText"
+              placeholder="Add your note here..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="saveNote">Save Note</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Note Modal -->
 </template>
 
 <script>
@@ -415,6 +493,9 @@ export default {
       ],
       selectedPaymentMethod: "",
       searchProductName: "",
+      customerName: "",
+      selectedItem: null,
+      noteText: "",
     }
   },
   computed: {
@@ -478,7 +559,31 @@ export default {
         this.cart.push({
           ...product,
           qty: 1,
+          note: "", // Add note field
+          showNoteInput: false, // Add field to control note input visibility
         });
+      }
+    },
+    toggleNoteInput(item) {
+      const idx = this.cart.findIndex(i => i.id === item.id);
+      if (idx !== -1) {
+        this.cart[idx].showNoteInput = !this.cart[idx].showNoteInput;
+        // Focus on the input after it becomes visible
+        if (this.cart[idx].showNoteInput) {
+          this.$nextTick(() => {
+            const input = this.$refs[`noteInput_${item.id}`];
+            if (input && input[0]) {
+              input[0].focus();
+            }
+          });
+        }
+      }
+    },
+    saveNote(item) {
+      const idx = this.cart.findIndex(i => i.id === item.id);
+      if (idx !== -1) {
+        // Hide the note input after saving
+        this.cart[idx].showNoteInput = false;
       }
     },
     incrementQty(item) {
@@ -523,6 +628,7 @@ export default {
       this.cart = [];
       this.selectedPaymentMethod = this.paymentMethods[0]?.value || null;
       this.searchProductName = "";
+      this.customerName = "";
       // Optionally reset other fields if needed
     },
     resetProductFilter() {
@@ -537,10 +643,12 @@ export default {
         type: "OFFLINE",
         payment_type: this.selectedPaymentMethod,
         status: "PAID",
+        customer_name: this.customerName || "Walk-in Customer",
         items: this.cart.map(item => ({
           product_id: item.id,
           qty: item.qty,
           price: item.price,
+          note: item.note || null, // Send note field for each transaction item
         })),
       };
       const result = await this.createTransaction(payload);

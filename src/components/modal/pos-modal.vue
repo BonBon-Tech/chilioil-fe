@@ -77,7 +77,7 @@
                   <td>{{ customerName }}</td>
                 </tr>
                 <tr>
-                  <td>Ivoice</td>
+                  <td>Invoice</td>
                   <td>:</td>
                   <td>{{ transactionData?.code }}</td>
                 </tr>
@@ -100,16 +100,24 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr
-                    v-for="(item, index) in transactionData?.transaction_items || []"
-                    :key="item.product_id"
-                    id="width-58"
+                <template
+                      v-for="(item, index) in transactionData?.transaction_items || []"
+                      :key="item.product_id"
                 >
-                  <td id="text-center">{{ index + 1 }}</td>
-                  <td colspan="3" style="padding:0;">{{ item.name || item.product_name || item.product_id }}</td>
-                  <td id="text-center">{{ item.qty ?? item.quantity ?? 0 }}</td>
-                  <td colspan="2" id="text-center">Rp{{ item.price * (item.qty ?? 0) }}</td>
-                </tr>
+                  <tr
+                      id="width-58"
+                  >
+                    <td id="text-center">{{ index + 1 }}</td>
+                    <td colspan="3" style="padding:0;">
+                      {{ item.name || item.product_name || item.product_id }}
+                    </td>
+                    <td id="text-center">{{ item.qty ?? item.quantity ?? 0 }}</td>
+                    <td colspan="2" id="text-center">Rp{{ item.price * (item.qty ?? 0) }}</td>
+                  </tr>
+                  <tr v-if="item.note !== '' && item.note">
+                    <td colspan="7">Note : {{ item.note }}</td>
+                  </tr>
+                </template>
                 </tbody>
               </table>
               <div id="separator">
@@ -134,72 +142,6 @@
               </div>
             </div>
           </div>
-          <!-- Commented: original printable-receipt with classes -->
-          <!--
-          <div id="printable-receipt">
-            <div class="icon-head text-center">
-              <a href="javascript:;">
-                <img src="@/assets/img/logo-main.png" width="100" height="30" alt="Receipt Logo">
-              </a>
-            </div>
-            <div class="text-center info text-center">
-              <h6>Jajaneun Chillioil x Sate Nagihin</h6>
-              <p class="mb-0">Phone Number: 085117569398</p>
-              <p class="mb-0">Email: <a href="mailto:example@gmail.com">chilioilxsatenagihin@gmail.com</a></p>
-            </div>
-            <div class="tax-invoice">
-              <h6 class="text-center">Tax Invoice</h6>
-              <div class="row">
-                <div class="col-sm-12 col-md-6">
-                  <div class="invoice-user-name"><span>Name: </span><span>{{ customerName }}</span></div>
-                  <div class="invoice-user-name"><span>Invoice No: </span><span>{{ transactionData?.code || '-' }}</span></div>
-                </div>
-                <div class="col-sm-12 col-md-6">
-                  <div class="invoice-user-name"><span>Date: </span><span>{{ formattedDate }}</span></div>
-                </div>
-              </div>
-            </div>
-            <table class="table-borderless w-100 table-fit">
-              <thead>
-              <tr>
-                <th># Item</th>
-                <th>Price</th>
-                <th>Qty</th>
-                <th class="text-end">Total</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(item, idx) in transactionData?.transaction_items || []" :key="item.product_id">
-                <td>{{ idx + 1 }}. {{ item.name || item.product_name || item.product_id }}</td>
-                <td>Rp{{ item.price }}</td>
-                <td>{{ item.qty ?? item.quantity ?? 0 }}</td>
-                <td class="text-end">Rp{{ (item.price * (item.qty ?? 0)) }}</td>
-              </tr>
-              <tr>
-                <td colspan="4">
-                  <table class="table-borderless w-100 table-fit">
-                    <tr>
-                      <td>Sub Total :</td>
-                      <td class="text-end">Rp{{ subTotal }}</td>
-                    </tr>
-                    <tr>
-                      <td>Total Bill :</td>
-                      <td class="text-end">Rp{{ subTotal }}</td>
-                    </tr>
-                    <tr>
-                      <td>Payment Type :</td>
-                      <td class="text-end">{{ transactionData?.payment_type || '-' }}</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-            <div class="text-center invoice-bar">
-            </div>
-          </div>
-          -->
-          <!-- Raw printable receipt for print-js (no classes, only inline style) -->
         </div>
         <div class="modal-footer">
           <a href="javascript:void(0);" class="btn btn-primary" @click="doPrint">Print Receipt</a>
@@ -1689,7 +1631,7 @@ export default {
       return this.transactionData.transaction_items.reduce((sum, item) => sum + (item.price * (item.qty ?? 0)), 0);
     },
     customerName() {
-      // You can adjust this if you have customer info in transactionData
+      // Use customer_name from transaction data
       return this.transactionData?.customer_name || "Walk-in Customer";
     },
     customerId() {
