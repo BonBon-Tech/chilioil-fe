@@ -14,9 +14,9 @@
             <p class="mb-0">Do you want to Print Receipt for the Completed Order</p>
             <div class="modal-footer d-sm-flex justify-content-between">
               <button type="button" class="btn btn-primary flex-fill"
-                      data-bs-toggle="modal" data-bs-target="#print-receipt">Print Receipt<i
+                      data-bs-toggle="modal" data-bs-target="#print-receipt" v-if="transactionData?.status === 'PAID'">Print Receipt<i
                   class="feather-arrow-right-circle icon-me-5"></i></button>
-              <button type="button" class="btn btn-secondary flex-fill" @click="handleNextOrder">Next Order<i
+              <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal" @click="handleNextOrder">Next Order<i
                   class="feather-arrow-right-circle icon-me-5"></i></button>
             </div>
           </form>
@@ -151,6 +151,121 @@
   </div>
   <!-- /Print Receipt -->
 
+  <!-- Transaction Details Modal -->
+  <div class="modal fade" id="transaction-details" tabindex="-1" aria-labelledby="transaction-details-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="transaction-details-label">Transaction Details</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedTransaction">
+            <div class="d-flex justify-content-between mb-3">
+              <span class="badge bg-primary">Order ID: {{ selectedTransaction.code }}</span>
+              <span class="badge" :class="getStatusBadgeClass(selectedTransaction.status)">{{ selectedTransaction.status }}</span>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h6>Customer Information</h6>
+                <table class="table table-sm table-borderless">
+                  <tr>
+                    <td width="40%">Customer</td>
+                    <td>: {{ selectedTransaction.customer_name || 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td>Date</td>
+                    <td>: {{ formatDate(selectedTransaction.date) }}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <h6>Payment Details</h6>
+                <table class="table table-sm table-borderless">
+                  <tr>
+                    <td width="40%">Payment Type</td>
+                    <td>: {{ selectedTransaction.payment_type }}</td>
+                  </tr>
+                  <tr>
+                    <td>Total Amount</td>
+                    <td>: Rp{{ selectedTransaction.total }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <h6>Order Items</h6>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in selectedTransaction.transaction_items" :key="item.id">
+                    <td>{{ index + 1 }}</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <img
+                          v-if="item.image_path"
+                          :src="item.image_path"
+                          alt="Product"
+                          class="me-2"
+                          style="width: 40px; height: 40px; object-fit: contain;"
+                        >
+                        <div>
+                          {{ item.name }}
+                          <div v-if="item.note" class="small text-muted">Note: {{ item.note }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Rp{{ item.price }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>Rp{{ item.total_price || (item.price * item.qty) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Subtotal</td>
+                    <td>Rp{{ selectedTransaction.sub_total }}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="text-end fw-bold">Total</td>
+                    <td>Rp{{ selectedTransaction.total }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <div v-else class="text-center py-4">
+            <p>Loading transaction details...</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <!-- Only show Print Receipt button for PAID orders -->
+          <button
+            v-if="selectedTransaction && selectedTransaction.status === 'PAID'"
+            type="button"
+            class="btn btn-primary"
+            @click="printSelectedTransaction"
+          >
+            Print Receipt
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Transaction Details Modal -->
+
   <div>
     <!--    <div>-->
     <!--    <div-->
@@ -264,899 +379,12 @@
     <!--    </div>-->
   </div>
 
-  <!-- Products -->
-  <div class="modal fade modal-default pos-modal" id="products" aria-labelledby="products">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header p-4 d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center">
-            <h5 class="me-4">Products</h5>
-            <span class="badge bg-info d-inline-block mb-0">Order ID : #666614</span>
-          </div>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body p-4">
-          <form @submit.prevent="submitForm">
-            <div class="product-wrap">
-              <div class="product-list d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center flex-fill">
-                  <a href="javascript:void(0);" class="img-bg me-2">
-                    <img src="@/assets/img/products/pos-product-16.png" alt="Products">
-                  </a>
-                  <div class="info d-flex align-items-center justify-content-between flex-fill">
-                    <div>
-                      <span>PT0005</span>
-                      <h6><a href="javascript:void(0);">Red Nike Laser</a></h6>
-                    </div>
-                    <p>$2000</p>
-                  </div>
-                </div>
-
-              </div>
-              <div class="product-list d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center flex-fill">
-                  <a href="javascript:void(0);" class="img-bg me-2">
-                    <img src="@/assets/img/products/pos-product-17.png" alt="Products">
-                  </a>
-                  <div class="info d-flex align-items-center justify-content-between flex-fill">
-                    <div>
-                      <span>PT0235</span>
-                      <h6><a href="javascript:void(0);">Iphone 14</a></h6>
-                    </div>
-                    <p>$3000</p>
-                  </div>
-                </div>
-              </div>
-              <div class="product-list d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center flex-fill">
-                  <a href="javascript:void(0);" class="img-bg me-2">
-                    <img src="@/assets/img/products/pos-product-16.png" alt="Products">
-                  </a>
-                  <div class="info d-flex align-items-center justify-content-between flex-fill">
-                    <div>
-                      <span>PT0005</span>
-                      <h6><a href="javascript:void(0);">Red Nike Laser</a></h6>
-                    </div>
-                    <p>$2000</p>
-                  </div>
-                </div>
-              </div>
-              <div class="product-list d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center flex-fill">
-                  <a href="javascript:void(0);" class="img-bg me-2">
-                    <img src="@/assets/img/products/pos-product-17.png" alt="Products">
-                  </a>
-                  <div class="info d-flex align-items-center justify-content-between flex-fill">
-                    <div>
-                      <span>PT0005</span>
-                      <h6><a href="javascript:void(0);">Red Nike Laser</a></h6>
-                    </div>
-                    <p>$2000</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer d-sm-flex justify-content-end">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Products -->
-
-  <div class="modal fade" id="create" tabindex="-1" aria-labelledby="create" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Create</h5>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form @submit.prevent="submitForm">
-            <div class="row">
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks">
-                  <label>Customer Name</label>
-                  <input type="text" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks">
-                  <label>Email</label>
-                  <input type="email" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks">
-                  <label>Phone</label>
-                  <input type="text" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks">
-                  <label>Country</label>
-                  <input type="text" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks">
-                  <label>City</label>
-                  <input type="text">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks">
-                  <label>Address</label>
-                  <input type="text">
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer d-sm-flex justify-content-end">
-              <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-submit me-2">Submit</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Hold -->
-  <div class="modal fade modal-default pos-modal" id="hold-order" aria-labelledby="hold-order">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header p-4">
-          <h5>Hold order</h5>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body p-4">
-          <form @submit.prevent="submitForm">
-            <h2 class="text-center p-4">4500.00</h2>
-            <div class="input-block">
-              <label>Order Reference</label>
-              <input class="form-control" type="text" value="" placeholder="">
-            </div>
-            <p>The current order will be set on hold. You can retreive this order from the pending order button.
-              Providing a reference to it might help you to identify the order more quickly.</p>
-            <div class="modal-footer d-sm-flex justify-content-end">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Confirm</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Hold -->
-
-  <!-- Edit Product -->
-  <div class="modal fade modal-default pos-modal" id="edit-product" aria-labelledby="edit-product">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header p-4">
-          <h5>Red Nike Laser</h5>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body p-4">
-          <form @submit.prevent="submitForm">
-            <div class="row">
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks add-product">
-                  <label>Product Name <span>*</span></label>
-                  <input type="text" placeholder="45">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks add-product">
-                  <label>Tax Type <span>*</span></label>
-                  <custom-select
-                      :options="Tax"
-                      id="taxtype"
-                      placeholder="Exclusive"
-                  />
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks add-product">
-                  <label>Tax <span>*</span></label>
-                  <input type="text" placeholder="% 15">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks add-product">
-                  <label>Discount Type <span>*</span></label>
-                  <custom-select
-                      :options="Discount"
-                      placeholder="Percentage"
-                  />
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks add-product">
-                  <label>Discount <span>*</span></label>
-                  <input type="text" placeholder="15">
-                </div>
-              </div>
-              <div class="col-lg-6 col-sm-12 col-12">
-                <div class="input-blocks add-product">
-                  <label>Sale Unit <span>*</span></label>
-                  <custom-select
-                      :options="Sale"
-                      id="saleunit"
-                      placeholder="Kilogram"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-footer d-sm-flex justify-content-end">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Edit Product -->
-
-  <!-- Recent Transactions -->
-  <div class="modal fade pos-modal" id="recents" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header p-4">
-          <h5 class="modal-title">Recent Transactions</h5>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <div class="modal-body p-4">
-          <div class="tabs-sets">
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="purchase-tab" data-bs-toggle="tab"
-                        data-bs-target="#purchase" type="button" aria-controls="purchase" aria-selected="true"
-                        role="tab">Purchase
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment"
-                        type="button" aria-controls="payment" aria-selected="false" role="tab">Payment
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return"
-                        type="button" aria-controls="return" aria-selected="false" role="tab">Return
-                </button>
-              </li>
-            </ul>
-            <div class="tab-content">
-              <div class="tab-pane fade show active" id="purchase" role="tabpanel"
-                   aria-labelledby="purchase-tab">
-                <div class="table-top">
-                  <div class="search-set">
-                    <div class="search-input">
-                      <a class="btn btn-searchset d-flex align-items-center h-100"><img
-                          src="@/assets/img/icons/search-white.svg" alt="img"></a>
-                    </div>
-                  </div>
-                  <div class="wordset">
-                    <ul>
-                      <li>
-                        <a class="d-flex align-items-center justify-content-center"
-                           data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img
-                            src="@/assets/img/icons/pdf.svg" alt="img"></a>
-                      </li>
-                      <li>
-                        <a class="d-flex align-items-center justify-content-center"
-                           data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img
-                            src="@/assets/img/icons/excel.svg" alt="img"></a>
-                      </li>
-                      <li>
-                        <a class="d-flex align-items-center justify-content-center"
-                           data-bs-toggle="tooltip" data-bs-placement="top" title="Print">
-                          <vue-feather
-                              type="printer" class="printer"></vue-feather>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="table-responsive">
-                  <table class="table datanew">
-                    <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Reference</th>
-                      <th>Customer</th>
-                      <th>Amount</th>
-                      <th class="no-sort">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0101</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0102</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0103</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0104</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0105</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0106</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0107</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="payment" role="tabpanel">
-                <div class="table-top">
-                  <div class="search-set">
-                    <div class="search-input">
-                      <a class="btn btn-searchset d-flex align-items-center h-100"><img
-                          src="@/assets/img/icons/search-white.svg" alt="img"></a>
-                    </div>
-                  </div>
-                  <div class="wordset">
-                    <ul>
-                      <li>
-                        <a class="d-flex align-items-center justify-content-center"
-                           data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img
-                            src="@/assets/img/icons/pdf.svg" alt="img"></a>
-                      </li>
-                      <li>
-                        <a class="d-flex align-items-center justify-content-center"
-                           data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img
-                            src="@/assets/img/icons/excel.svg" alt="img"></a>
-                      </li>
-                      <li>
-                        <a class="d-flex align-items-center justify-content-center"
-                           data-bs-toggle="tooltip" data-bs-placement="top" title="Print">
-                          <vue-feather
-                              type="printer" class="printer"></vue-feather>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="table-responsive">
-                  <table class="table datanew">
-                    <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Reference</th>
-                      <th>Customer</th>
-                      <th>Amount</th>
-                      <th class="no-sort">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0101</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0102</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0103</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0104</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0105</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0106</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0107</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="return" role="tabpanel">
-                <div class="table-top">
-                  <div class="search-set">
-                    <div class="search-input">
-                      <a class="btn btn-searchset d-flex align-items-center h-100"><img
-                          src="@/assets/img/icons/search-white.svg" alt="img"></a>
-                    </div>
-                  </div>
-                  <div class="wordset">
-                    <ul>
-                      <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"
-                           class="d-flex align-items-center justify-content-center"><img
-                            src="@/assets/img/icons/pdf.svg" alt="img"></a>
-                      </li>
-                      <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"
-                           class="d-flex align-items-center justify-content-center"><img
-                            src="@/assets/img/icons/excel.svg" alt="img"></a>
-                      </li>
-                      <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"
-                           class="d-flex align-items-center justify-content-center">
-                          <vue-feather
-                              type="printer" class="printer"></vue-feather>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="table-responsive">
-                  <table class="table datanew">
-                    <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Reference</th>
-                      <th>Customer</th>
-                      <th>Amount</th>
-                      <th class="no-sort">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0101</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0102</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0103</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0104</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0105</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0106</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>19 Jan 2023</td>
-                      <td>INV/SL0107</td>
-                      <td>Walk-in Customer</td>
-                      <td>$1500.00</td>
-                      <td class="action-table-data">
-                        <div class="edit-delete-action">
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather type="eye"
-                                         class="feather-eye"></vue-feather>
-                          </a>
-                          <a class="me-2 p-2" href="javascript:void(0);">
-                            <vue-feather
-                                type="edit" class="feather-edit"></vue-feather>
-                          </a>
-                          <a class="p-2 confirm-text" href="javascript:void(0);">
-                            <vue-feather
-                                type="trash-2" class="feather-trash-2"></vue-feather>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /Recent Transactions -->
-
   <!-- Recent Transactions -->
   <div class="modal fade pos-modal" id="orders" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header p-4">
-          <h5 class="modal-title">Orders</h5>
+          <h5 class="modal-title">Today's Orders</h5>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">×</span>
           </button>
@@ -1165,129 +393,64 @@
           <div class="tabs-sets">
             <ul class="nav nav-tabs" id="myTabs" role="tablist">
               <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="onhold-tab" data-bs-toggle="tab"
-                        data-bs-target="#onhold" type="button" aria-controls="onhold" aria-selected="true"
-                        role="tab">Onhold
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="unpaid-tab" data-bs-toggle="tab" data-bs-target="#unpaid"
-                        type="button" aria-controls="unpaid" aria-selected="false" role="tab">Unpaid
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab"
+                        data-bs-target="#pending" type="button" aria-controls="pending" aria-selected="true"
+                        role="tab" @click="fetchOrders('PENDING')">Pending
                 </button>
               </li>
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="paid-tab" data-bs-toggle="tab" data-bs-target="#paid"
-                        type="button" aria-controls="paid" aria-selected="false" role="tab">Paid
+                        type="button" aria-controls="paid" aria-selected="false" role="tab" @click="fetchOrders('PAID')">Paid
                 </button>
               </li>
             </ul>
             <div class="tab-content">
-              <div class="tab-pane fade show active" id="onhold" role="tabpanel" aria-labelledby="onhold-tab">
+              <!-- PENDING ORDERS -->
+              <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
                 <div class="table-top">
                   <div class="search-set w-100 search-order">
-                    <div class="search-input w-100">
-                      <a class="btn btn-searchset d-flex align-items-center h-100"><img
-                          src="@/assets/img/icons/search-white.svg" alt="img"></a>
+                    <div class="search-input w-100 d-flex justify-content-between align-items-center">
+                      <input
+                        type="text"
+                        class="form-control me-2"
+                        placeholder="Search order code or customer..."
+                        v-model="pendingSearchQuery"
+                        @keyup.enter="searchPendingOrders"
+                      />
+                      <button type="button" class="btn btn-primary" @click="searchPendingOrders">
+                        <vue-feather type="search" class="feather-16"></vue-feather>
+                      </button>
                     </div>
                   </div>
                 </div>
                 <div class="order-body">
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-secondary d-inline-block mb-4">Order ID : #666659</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">Botsford</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$900</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">29-08-2023 13:39:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-sm-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
+                  <div v-if="pendingOrdersLoading" class="text-center py-5">
+                    <vue-feather type="loader" class="feather-24 spin"></vue-feather>
+                    <p class="mt-2">Loading pending orders...</p>
                   </div>
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-secondary d-inline-block mb-4">Order ID : #666660</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">Smith</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$15000</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">30-08-2023 15:59:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
+                  <div v-else-if="filteredPendingOrders.length === 0" class="text-center py-5">
+                    <vue-feather type="alert-circle" class="feather-24"></vue-feather>
+                    <p class="mt-2">No pending orders found</p>
                   </div>
-                  <div class="default-cover p-4">
-                    <span class="badge bg-secondary d-inline-block mb-4">Order ID : #666661</span>
+                  <div
+                    v-else
+                    v-for="order in filteredPendingOrders"
+                    :key="order.id"
+                    class="default-cover p-4 mb-4"
+                  >
+                    <span class="badge bg-warning d-inline-block mb-4">Order ID : {{ order.code }}</span>
                     <div class="row">
                       <div class="col-sm-12 col-md-6 record mb-3">
                         <table>
                           <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
                             <td>Customer</td>
                             <td class="colon">:</td>
-                            <td class="text">John David</td>
+                            <td class="text">{{ order.customer_name }}</td>
+                          </tr>
+                          <tr>
+                            <td>Items</td>
+                            <td class="colon">:</td>
+                            <td class="text">{{ order.total_item }}</td>
                           </tr>
                         </table>
                       </div>
@@ -1296,188 +459,141 @@
                           <tr>
                             <td>Total</td>
                             <td class="colon">:</td>
-                            <td class="text">$2000</td>
+                            <td class="text">Rp{{ order.total }}</td>
                           </tr>
                           <tr>
                             <td>Date</td>
                             <td class="colon">:</td>
-                            <td class="text">01-09-2023 13:15:00</td>
+                            <td class="text">{{ formatDate(order.date) }}</td>
                           </tr>
                         </table>
                       </div>
                     </div>
-                    <p class="p-4 mb-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
+
+                    <div class="btn-row d-sm-flex align-items-center justify-content-between mt-3">
+                      <a
+                          href="javascript:void(0);"
+                          class="btn btn-primary btn-icon flex-fill"
+                          @click="toggleOrderDetails(order.id)"
+                      >
+                        <span v-if="expandedOrderId === order.id">Hide Details</span>
+                        <span v-else>View Details</span>
+                      </a>
+                      <button
+                          href="javascript:void(0);"
+                          class="btn btn-success btn-icon flex-fill"
+                          @click="updateOrderStatus(order.id, 'PAID')"
+                          :disabled="orderActionLoading"
+                      >
+                        <vue-feather type="check-circle" class="feather-14 me-1"></vue-feather>
+                        Payment
+                      </button>
+                      <button
+                          href="javascript:void(0);"
+                          class="btn btn-danger btn-icon flex-fill"
+                          @click="confirmCancelOrder(order.id)"
+                          :disabled="orderActionLoading"
+                      >
+                        <vue-feather type="x-circle" class="feather-14 me-1"></vue-feather>
+                        Cancel
+                      </button>
+                    </div>
+
+                    <!-- Expanded transaction items section -->
+                    <div v-if="expandedOrderId === order.id && order.transaction_items && order.transaction_items.length > 0" class="mt-3 mb-3">
+                      <h6 class="mb-2">Order Items</h6>
+                      <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                          <thead class="table-light">
+                            <tr>
+                              <th>#</th>
+                              <th>Product</th>
+                              <th>Qty</th>
+                              <th class="text-end">Total Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(item, index) in order.transaction_items" :key="item.id">
+                              <td>{{ index + 1 }}</td>
+                              <td>
+                                {{ item.name }}
+                                <div v-if="item.note" class="small text-muted">Note: {{ item.note }}</div>
+                              </td>
+                              <td>{{ item.qty }}</td>
+                              <td class="text-end">Rp{{ item.total_price || (item.price * item.qty) }}</td>
+                            </tr>
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colspan="3" class="text-end fw-bold">Total</td>
+                              <td class="text-end fw-bold">Rp{{ order.total }}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- Loading items indicator -->
+                    <div v-else-if="expandedOrderId === order.id && loadingItems" class="mt-3 mb-3 text-center">
+                      <vue-feather type="loader" class="feather-16 spin me-1"></vue-feather>
+                      <span>Loading items...</span>
                     </div>
                   </div>
                 </div>
-
-              </div>
-              <div class="tab-pane fade" id="unpaid" role="tabpanel">
-                <div class="table-top">
-                  <div class="search-set w-100 search-order">
-                    <div class="search-input">
-                      <a class="btn btn-searchset d-flex align-items-center h-100"><img
-                          src="@/assets/img/icons/search-white.svg" alt="img"></a>
-                    </div>
-                  </div>
-
-                </div>
-                <div class="order-body">
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-info d-inline-block mb-4">Order ID : #666662</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">Anastasia</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$2500</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">10-09-2023 17:15:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
-                  </div>
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-info d-inline-block mb-4">Order ID : #666663</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">Lucia</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$1500</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">11-09-2023 14:50:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
-                  </div>
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-info d-inline-block mb-4">Order ID : #666664</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">Diego</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$30000</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">12-09-2023 17:22:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4 mb-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
-                  </div>
+                <!-- Add refresh button at the bottom -->
+                <div class="d-flex justify-content-center mt-3">
+                  <button type="button" class="btn btn-outline-secondary" @click="fetchOrders('PENDING', true)">
+                    <vue-feather type="refresh-cw" class="feather-16 me-1"></vue-feather> Refresh
+                  </button>
                 </div>
               </div>
-              <div class="tab-pane fade" id="paid" role="tabpanel">
+
+              <!-- PAID ORDERS -->
+              <div class="tab-pane fade" id="paid" role="tabpanel" aria-labelledby="paid-tab">
                 <div class="table-top">
                   <div class="search-set w-100 search-order">
-                    <div class="search-input">
-                      <a class="btn btn-searchset d-flex align-items-center h-100"><img
-                          src="@/assets/img/icons/search-white.svg" alt="img"></a>
+                    <div class="search-input w-100 d-flex justify-content-between align-items-center">
+                      <input
+                        type="text"
+                        class="form-control me-2"
+                        placeholder="Search order code or customer..."
+                        v-model="paidSearchQuery"
+                        @keyup.enter="searchPaidOrders"
+                      />
+                      <button type="button" class="btn btn-primary" @click="searchPaidOrders">
+                        <vue-feather type="search" class="feather-16"></vue-feather>
+                      </button>
                     </div>
                   </div>
                 </div>
                 <div class="order-body">
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-primary d-inline-block mb-4">Order ID : #666665</span>
+                  <div v-if="paidOrdersLoading" class="text-center py-5">
+                    <vue-feather type="loader" class="feather-24 spin"></vue-feather>
+                    <p class="mt-2">Loading paid orders...</p>
+                  </div>
+                  <div v-else-if="filteredPaidOrders.length === 0" class="text-center py-5">
+                    <vue-feather type="alert-circle" class="feather-24"></vue-feather>
+                    <p class="mt-2">No paid orders found</p>
+                  </div>
+                  <div
+                    v-else
+                    v-for="order in filteredPaidOrders"
+                    :key="order.id"
+                    class="default-cover p-4 mb-4"
+                  >
+                    <span class="badge bg-success d-inline-block mb-4">Order ID : {{ order.code }}</span>
                     <div class="row">
                       <div class="col-sm-12 col-md-6 record mb-3">
                         <table>
                           <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
                             <td>Customer</td>
                             <td class="colon">:</td>
-                            <td class="text">Hugo</td>
+                            <td class="text">{{ order.customer_name }}</td>
+                          </tr>
+                          <tr>
+                            <td>Items</td>
+                            <td class="colon">:</td>
+                            <td class="text">{{ order.total_item }}</td>
                           </tr>
                         </table>
                       </div>
@@ -1486,107 +602,84 @@
                           <tr>
                             <td>Total</td>
                             <td class="colon">:</td>
-                            <td class="text">$5000</td>
+                            <td class="text">Rp{{ order.total }}</td>
                           </tr>
                           <tr>
                             <td>Date</td>
                             <td class="colon">:</td>
-                            <td class="text">13-09-2023 19:39:11</td>
+                            <td class="text">{{ formatDate(order.date) }}</td>
                           </tr>
                         </table>
                       </div>
                     </div>
-                    <p class="p-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
+
+                    <div class="btn-row d-sm-flex align-items-center justify-content-between mt-3">
+                      <a
+                          href="javascript:void(0);"
+                          class="btn btn-primary btn-icon flex-fill"
+                          @click="toggleOrderDetails(order.id)"
+                      >
+                        <span v-if="expandedOrderId === order.id">Hide Details</span>
+                        <span v-else>View Details</span>
+                      </a>
+                      <button
+                          href="javascript:void(0);"
+                          class="btn btn-success btn-icon flex-fill"
+                          @click="printPaidOrder(order)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#print-receipt"
+                      >
+                        <vue-feather type="printer" class="feather-14 me-1"></vue-feather>
+                        Print Receipt
+                      </button>
+                    </div>
+
+                    <!-- Expanded transaction items section -->
+                    <div v-if="expandedOrderId === order.id && order.transaction_items && order.transaction_items.length > 0" class="mt-3 mb-3">
+                      <h6 class="mb-2">Order Items</h6>
+                      <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                          <thead class="table-light">
+                            <tr>
+                              <th>#</th>
+                              <th>Product</th>
+                              <th>Qty</th>
+                              <th class="text-end">Total Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(item, index) in order.transaction_items" :key="item.id">
+                              <td>{{ index + 1 }}</td>
+                              <td>
+                                {{ item.name }}
+                                <div v-if="item.note" class="small text-muted">Note: {{ item.note }}</div>
+                              </td>
+                              <td>{{ item.qty }}</td>
+                              <td class="text-end">Rp{{ item.total_price || (item.price * item.qty) }}</td>
+                            </tr>
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colspan="3" class="text-end fw-bold">Total</td>
+                              <td class="text-end fw-bold">Rp{{ order.total }}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- Loading items indicator -->
+                    <div v-else-if="expandedOrderId === order.id && loadingItems" class="mt-3 mb-3 text-center">
+                      <vue-feather type="loader" class="feather-16 spin me-1"></vue-feather>
+                      <span>Loading items...</span>
                     </div>
                   </div>
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-primary d-inline-block mb-4">Order ID : #666666</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">Antonio</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$7000</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">15-09-2023 18:39:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
-                  </div>
-                  <div class="default-cover p-4 mb-4">
-                    <span class="badge bg-primary d-inline-block mb-4">Order ID : #666667</span>
-                    <div class="row">
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr class="mb-3">
-                            <td>Cashier</td>
-                            <td class="colon">:</td>
-                            <td class="text">admin</td>
-                          </tr>
-                          <tr>
-                            <td>Customer</td>
-                            <td class="colon">:</td>
-                            <td class="text">MacQuoid</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class="col-sm-12 col-md-6 record mb-3">
-                        <table>
-                          <tr>
-                            <td>Total</td>
-                            <td class="colon">:</td>
-                            <td class="text">$7050</td>
-                          </tr>
-                          <tr>
-                            <td>Date</td>
-                            <td class="colon">:</td>
-                            <td class="text">17-09-2023 19:39:11</td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                    <p class="p-4 mb-4">Customer need to recheck the product once</p>
-                    <div class="btn-row d-flex align-items-center justify-content-between">
-                      <a href="javascript:void(0);" class="btn btn-info btn-icon flex-fill">Open</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-danger btn-icon flex-fill">Products</a>
-                      <a href="javascript:void(0);"
-                         class="btn btn-success btn-icon flex-fill">Print</a>
-                    </div>
-                  </div>
+                </div>
+                <!-- Add refresh button at the bottom -->
+                <div class="d-flex justify-content-center mt-3">
+                  <button type="button" class="btn btn-outline-secondary" @click="fetchOrders('PAID', true)">
+                    <vue-feather type="refresh-cw" class="feather-16 me-1"></vue-feather> Refresh
+                  </button>
                 </div>
               </div>
             </div>
@@ -1599,15 +692,22 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import {mapGetters, mapActions} from "vuex";
 import printJS from "print-js";
+import Swal from "sweetalert2";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   const pad = n => n < 10 ? '0' + n : n;
-  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${pad(d.getFullYear())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatDateForAPI(date) {
+  const d = date;
+  const pad = n => n < 10 ? '0' + n : n;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 export default {
@@ -1617,10 +717,25 @@ export default {
       Discount: ["Percentage", "Early payment discounts"],
       Sale: ["Kilogram", "Grams"],
       printReady: false,
+      pendingSearchQuery: '',
+      paidSearchQuery: '',
+      pendingOrdersLoading: false,
+      paidOrdersLoading: false,
+      filteredPendingOrders: [],
+      filteredPaidOrders: [],
+      expandedOrderId: null,
+      loadingItems: false,
+      orderActionLoading: false,
     }
   },
   computed: {
-    ...mapGetters("transaction", ["lastTransaction"]),
+    ...mapGetters("transaction", [
+      "lastTransaction",
+      "pendingTransactions",
+      "paidTransactions",
+      "selectedTransaction",
+      "transactionLoading"
+    ]),
     transactionData() {
       // Use lastTransaction from store, fallback to empty object
       return this.lastTransaction || {};
@@ -1643,6 +758,11 @@ export default {
     }
   },
   methods: {
+    ...mapActions("transaction", [
+      "fetchTransactions",
+      "getTransaction",
+      "updateTransactionStatus"
+    ]),
     handleNextOrder() {
       this.$emit('next-order');
       this.$nextTick(() => {
@@ -1742,130 +862,356 @@ export default {
               }
             `
           });
-          // printJS({
-          //   printable: 'printable-receipt',
-          //   type: 'html',
-          //   font_size: '11pt',
-          //   style: `
-          //     @media print {
-          //       @page {
-          //         size: 70mm auto;
-          //         margin: 0 !important;
-          //         padding: 0 !important;
-          //       }
-          //       html, body, #printable-receipt, .printable-receipt {
-          //         width: 70mm !important;
-          //         min-width: 0 !important;
-          //         max-width: 70mm !important;
-          //         margin: 0 !important;
-          //         padding: 0 !important;
-          //         // background: #fff !important;
-          //         // box-sizing: border-box !important;
-          //         // font-family: 'Times New Roman', Times, serif !important;
-          //         // font-size: 10px !important;
-          //         // line-height: 1.2 !important;
-          //         // text-align: center !important;
-          //       }
-          //       .receipt-logo {
-          //         display: block !important;
-          //         margin: 0 auto !important;
-          //         max-width: 100% !important;
-          //         height: auto !important;
-          //       }
-          //       .company-name {
-          //         text-align: center !important;
-          //         font-size: 1pt !important;
-          //         font-weight: bold !important;
-          //       }
-          //       .information-store {
-          //         text-align: center !important;
-          //         font-size: 1pt !important;
-          //         margin-top: 10px !important;
-          //       }
-          //       .separator {
-          //         margin-top: 5px !important;
-          //         text-align: center !important;
-          //       }
-          //       // .row {
-          //       //   display: flex;
-          //       //   flex-direction: row;
-          //       //   word-break: break-word;
-          //       //   width: 70mm !important;
-          //       //   margin-top: 5px;
-          //       // }
-          //       .row {
-          //         display: flex;
-          //         flex-direction: row;
-          //         width: 70mm !important;
-          //         margin: 5px 0 0 0 !important;
-          //         padding: 0 0 0 0 !important;
-          //         // align-items: flex-start; /* align items to top in case they wrap */
-          //         // page-break-inside: avoid;
-          //         // white-space: normal !important; /* allow wrapping */
-          //         // overflow-wrap: break-word !important; /* for long strings with no spaces */
-          //         // height: auto !important; /* allow height to adjust based on content */
-          //       }
-          //       .label-transaction-info {
-          //         width: 15mm !important;
-          //         text-align: left !important;
-          //       }
-          //       .label-separator {
-          //         width: 2mm !important;
-          //         text-align: left !important;
-          //       }
-          //       .value-transaction-info {
-          //         width: 53mm !important;
-          //         text-align: left !important;
-          //       }
-          //       .table-number {
-          //         width: 8mm !important;
-          //         text-align: left !important;
-          //       }
-          //       .table-number-value {
-          //         width: 8mm !important;
-          //         text-align: center !important;
-          //       }
-          //       // .table-item {
-          //       //   width: 27mm !important;
-          //       //   text-align: left !important;
-          //       // }
-          //       .table-item {
-          //         width: 27mm !important;
-          //         text-align: left !important;
-          //         word-wrap: break-word; /* wrap long words */
-          //         white-space: normal !important; /* allow wrapping */
-          //         overflow-wrap: break-word !important; /* for long strings with no spaces */
-          //         padding: 0 0 0 0 !important;
-          //         margin: 0 0 0 0 !important;
-          //       }
-          //       .table-qty {
-          //         width: 8mm !important;
-          //         text-align: left !important;
-          //       }
-          //       .table-qty-value {
-          //         width: 8mm !important;
-          //         text-align: center !important;
-          //       }
-          //       .table-total {
-          //         width: 27mm !important;
-          //         text-align: center !important;
-          //       }
-          //       .table-number-value,
-          //       .table-number,
-          //       .table-qty,
-          //       .table-qty-value,
-          //       .table-total {
-          //         padding: 0 0 0 0 !important;
-          //         margin: 0 0 0 0 !important;
-          //         display: flex;
-          //         align-items: flex-start; /* align with wrapping text */
-          //       }
-          //     }
-          //   `
-          // });
         });
       });
+    },
+
+    // Updated fetchOrders method to handle search queries and resetting
+    async fetchOrders(status, resetSearch = false) {
+      // Reset expanded order when switching tabs or refreshing
+      this.expandedOrderId = null;
+
+      // Reset search query if requested
+      if (resetSearch) {
+        if (status === 'PENDING') {
+          this.pendingSearchQuery = '';
+        } else {
+          this.paidSearchQuery = '';
+        }
+      }
+
+      // Get today's date
+      const today = new Date();
+
+      // Set start date to today at 00:00:00
+      const startDate = new Date(today);
+      startDate.setHours(0, 0, 0, 0);
+
+      // Set end date to today at 23:59:59
+      const endDate = new Date(today);
+      endDate.setHours(23, 59, 59, 999);
+
+      // Format dates for API - use URL-compatible format
+      const fromDate = formatDateForAPI(startDate);
+      const toDate = formatDateForAPI(endDate);
+
+      // Get the appropriate search query based on the status
+      const searchQuery = status === 'PENDING' ? this.pendingSearchQuery : this.paidSearchQuery;
+
+      if (status === 'PENDING') {
+        this.pendingOrdersLoading = true;
+        this.filteredPendingOrders = [];
+      } else {
+        this.paidOrdersLoading = true;
+        this.filteredPaidOrders = [];
+      }
+
+      try {
+        await this.fetchTransactions({
+          status: status,
+          fromDate: fromDate,
+          toDate: toDate,
+          searchQuery: searchQuery
+        });
+
+        if (status === 'PENDING') {
+          this.filteredPendingOrders = [...this.pendingTransactions];
+        } else {
+          this.filteredPaidOrders = [...this.paidTransactions];
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      } finally {
+        if (status === 'PENDING') {
+          this.pendingOrdersLoading = false;
+        } else {
+          this.paidOrdersLoading = false;
+        }
+      }
+    },
+
+    // Search methods that trigger API calls
+    searchPendingOrders() {
+      this.fetchOrders('PENDING');
+    },
+
+    searchPaidOrders() {
+      this.fetchOrders('PAID');
+    },
+
+    // Methods to toggle and load order details
+    async toggleOrderDetails(orderId) {
+      if (this.expandedOrderId === orderId) {
+        // If already expanded, collapse it
+        this.expandedOrderId = null;
+        return;
+      }
+
+      this.expandedOrderId = orderId;
+      this.loadingItems = true;
+
+      // Find the order in the appropriate array
+      const isPending = this.filteredPendingOrders.some(order => order.id === orderId);
+      const isPaid = this.filteredPaidOrders.some(order => order.id === orderId);
+
+      // Only fetch details if the transaction_items array is empty or doesn't exist
+      let orderWithItems;
+
+      if (isPending) {
+        orderWithItems = this.filteredPendingOrders.find(order => order.id === orderId);
+      } else if (isPaid) {
+        orderWithItems = this.filteredPaidOrders.find(order => order.id === orderId);
+      }
+
+      if (!orderWithItems?.transaction_items || orderWithItems.transaction_items.length === 0) {
+        try {
+          const result = await this.getTransaction(orderId);
+          if (result.success) {
+            // Update the order in the appropriate array
+            if (isPending) {
+              const orderIndex = this.filteredPendingOrders.findIndex(order => order.id === orderId);
+              if (orderIndex !== -1) {
+                this.filteredPendingOrders.splice(orderIndex, 1, {...this.selectedTransaction});
+              }
+            } else if (isPaid) {
+              const orderIndex = this.filteredPaidOrders.findIndex(order => order.id === orderId);
+              if (orderIndex !== -1) {
+                this.filteredPaidOrders.splice(orderIndex, 1, {...this.selectedTransaction});
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching order details:', error);
+        }
+      }
+
+      this.loadingItems = false;
+    },
+
+    // New method to properly handle printing paid orders
+    async printPaidOrder(order) {
+      try {
+        // If the order doesn't have transaction_items, fetch the complete details
+        if (!order.transaction_items || order.transaction_items.length === 0) {
+          const result = await this.getTransaction(order.id);
+          if (result.success) {
+            // Set the selected transaction as the current transaction to print
+            this.$store.commit('transaction/setLastTransaction', this.selectedTransaction);
+          } else {
+            throw new Error("Failed to fetch transaction details");
+          }
+        } else {
+          // If order already has transaction_items, use it directly
+          this.$store.commit('transaction/setLastTransaction', order);
+        }
+      } catch (error) {
+        console.error('Error preparing order for printing:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to prepare receipt for printing. Please try again.',
+        });
+      }
+    },
+
+    // Method to print specific order - can be removed as it's replaced by printPaidOrder
+    printOrder(orderId) {
+      this.getTransaction(orderId).then(() => {
+        // Set the selected transaction as the current transaction to print
+        this.$store.commit('transaction/setLastTransaction', this.selectedTransaction);
+
+        // Open the print receipt modal
+        setTimeout(() => {
+          const printModal = document.getElementById('print-receipt');
+          if (printModal && window.bootstrap?.Modal) {
+            const modalInstance = new window.bootstrap.Modal(printModal);
+            modalInstance.show();
+          }
+        }, 400);
+      });
+    },
+
+    // Methods for updating order status
+    async updateOrderStatus(orderId, status) {
+      if (status === 'CANCEL') {
+        this.confirmCancelOrder(orderId);
+        return;
+      }
+
+      this.orderActionLoading = true;
+
+      try {
+        const result = await this.updateTransactionStatus({ id: orderId, status });
+        if (result.success) {
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: `Order has been ${status.toLowerCase()} successfully.`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+
+          // Refresh the orders list
+          await this.fetchOrders('PENDING');
+          await this.fetchOrders('PAID');
+        }
+      } catch (error) {
+        console.error('Error updating order status:', error);
+      } finally {
+        this.orderActionLoading = false;
+      }
+    },
+
+    // Updated to use SweetAlert2 directly instead of custom modal
+    confirmCancelOrder(orderId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'Are you sure you want to cancel this order? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, cancel it!',
+        cancelButtonText: 'No, keep it'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.processCancelOrder(orderId);
+        }
+      });
+    },
+
+    // Keep this method for processing cancel action
+    async processCancelOrder(orderId) {
+      this.orderActionLoading = true;
+
+      try {
+        const result = await this.updateTransactionStatus({ id: orderId, status: 'CANCELED' });
+        if (result.success) {
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Order Cancelled',
+            text: 'The order has been cancelled successfully.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+
+          // Refresh the orders list
+          await this.fetchOrders('PENDING');
+        }
+      } catch (error) {
+        console.error('Error cancelling order:', error);
+        // Show error message
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to cancel the order. Please try again.',
+        });
+      } finally {
+        this.orderActionLoading = false;
+      }
+    },
+
+    async viewOrderDetails(orderId) {
+      try {
+        await this.getTransaction(orderId);
+
+        // Close the orders modal and open transaction details modal
+        this.$nextTick(() => {
+          // Close orders modal
+          const ordersModal = document.getElementById('orders');
+          if (ordersModal && window.bootstrap?.Modal) {
+            const modalInstance = window.bootstrap.Modal.getInstance(ordersModal);
+            if (modalInstance) {
+              modalInstance.hide();
+            }
+          }
+
+          // Open transaction details modal
+          setTimeout(() => {
+            const detailsModal = document.getElementById('transaction-details');
+            if (detailsModal && window.bootstrap?.Modal) {
+              const modalInstance = new window.bootstrap.Modal(detailsModal);
+              modalInstance.show();
+            }
+          }, 400);
+        });
+      } catch (error) {
+        console.error('Error fetching transaction details:', error);
+      }
+    },
+
+    printSelectedTransaction() {
+      // Only allow printing for PAID transactions
+      if (this.selectedTransaction && this.selectedTransaction.status !== 'PAID') {
+        return;
+      }
+
+      // Close the transaction details modal
+      const transactionDetailsModal = document.getElementById('transaction-details');
+      if (transactionDetailsModal && window.bootstrap?.Modal) {
+        const modalInstance = window.bootstrap.Modal.getInstance(transactionDetailsModal);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+      }
+
+      // Set the selected transaction as the current transaction to print
+      this.$store.commit('transaction/setLastTransaction', this.selectedTransaction);
+
+      // Open the print receipt modal
+      setTimeout(() => {
+        const printModal = document.getElementById('print-receipt');
+        if (printModal && window.bootstrap?.Modal) {
+          const modalInstance = new window.bootstrap.Modal(printModal);
+          modalInstance.show();
+        }
+      }, 400);
+    },
+
+    formatDate(dateStr) {
+      return formatDate(dateStr);
+    },
+
+    getStatusBadgeClass(status) {
+      switch(status) {
+        case 'PENDING': return 'bg-warning';
+        case 'PAID': return 'bg-success';
+        default: return 'bg-secondary';
+      }
     }
+  },
+  mounted() {
+    // Fetch pending orders when the component is mounted to have data ready
+    this.fetchOrders('PENDING');
+
+    // Add spin class for loader icon
+    const style = document.createElement('style');
+    style.textContent = `
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
   },
 };
 </script>
+
+<style scoped>
+.search-order .form-control {
+  height: 38px;
+  border-radius: 5px;
+}
+.colon {
+  padding: 0 8px;
+}
+.feather-36 {
+  width: 36px;
+  height: 36px;
+}
+</style>

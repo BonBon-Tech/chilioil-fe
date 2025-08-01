@@ -8,19 +8,20 @@
           class="btn btn-secondary mb-xs-3"
           data-bs-toggle="modal"
           data-bs-target="#orders"
+          @click="loadOrders"
           ><span class="me-1 d-flex align-items-center"
             ><vue-feather type="shopping-cart" class="feather-16"></vue-feather></span
           >View Orders</a
         >
-        <a
-          href="javascript:void(0);"
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#recents"
-          ><span class="me-1 d-flex align-items-center"
-            ><vue-feather type="refresh-ccw" class="feather-16"></vue-feather></span
-          >Transaction</a
-        >
+<!--        <a-->
+<!--          href="javascript:void(0);"-->
+<!--          class="btn btn-primary"-->
+<!--          data-bs-toggle="modal"-->
+<!--          data-bs-target="#recents"-->
+<!--          ><span class="me-1 d-flex align-items-center"-->
+<!--            ><vue-feather type="refresh-ccw" class="feather-16"></vue-feather></span-->
+<!--          >Transaction</a-->
+<!--        >-->
       </div>
 
       <div class="row align-items-start pos-wrapper">
@@ -147,26 +148,26 @@
         </div>
         <div class="col-md-12 col-lg-4 ps-0">
           <aside class="product-order-list">
-            <div class="head d-flex align-items-center justify-content-between w-100">
-              <div class="">
-                <h5>Order List</h5>
-                <span>Transaction ID : #65565</span>
-              </div>
-              <div class="">
-                <a
-                  class="confirm-text"
-                  @click="showConfirmation"
-                  href="javascript:void(0);"
-                  ><vue-feather
-                    type="trash-2"
-                    class="feather-16 text-danger"
-                  ></vue-feather
-                ></a>
-                <a href="javascript:void(0);" class="text-default"
-                  ><vue-feather type="more-vertical" class="feather-16"></vue-feather
-                ></a>
-              </div>
-            </div>
+<!--            <div class="head d-flex align-items-center justify-content-between w-100">-->
+<!--              <div class="">-->
+<!--                <h5>Order List</h5>-->
+<!--                <span>Transaction ID : #65565</span>-->
+<!--              </div>-->
+<!--              <div class="">-->
+<!--                <a-->
+<!--                  class="confirm-text"-->
+<!--                  @click="showConfirmation"-->
+<!--                  href="javascript:void(0);"-->
+<!--                  ><vue-feather-->
+<!--                    type="trash-2"-->
+<!--                    class="feather-16 text-danger"-->
+<!--                  ></vue-feather-->
+<!--                ></a>-->
+<!--                <a href="javascript:void(0);" class="text-default"-->
+<!--                  ><vue-feather type="more-vertical" class="feather-16"></vue-feather-->
+<!--                ></a>-->
+<!--              </div>-->
+<!--            </div>-->
             <div class="customer-info block-section">
               <h6>Customer Information</h6>
               <div class="input-block d-flex align-items-center">
@@ -373,7 +374,7 @@
               <a
                 href="javascript:void(0);"
                 class="btn btn-success btn-icon flex-fill"
-                @click="handlePayment"
+                @click="handlePayment('PAID')"
                 :disabled="cart.length === 0 || paymentLoading"
                 ><span class="me-1 d-flex align-items-center"
                   ><vue-feather
@@ -381,6 +382,19 @@
                     class="feather-16 me-1"
                   ></vue-feather></span
                 >Payment</a
+              >
+
+              <a
+                href="javascript:void(0);"
+                class="btn btn-primary btn-icon flex-fill"
+                @click="handlePayment('PENDING')"
+                :disabled="cart.length === 0 || paymentLoading"
+                ><span class="me-1 d-flex align-items-center"
+                  ><vue-feather
+                    type="pause"
+                    class="feather-16 me-1"
+                  ></vue-feather></span
+                >Pending</a
               >
             </div>
           </aside>
@@ -396,7 +410,7 @@
     data-bs-toggle="modal"
     data-bs-target="#payment-completed"
   ></button>
-  <pos-modal @next-order="resetOrder"></pos-modal>
+  <pos-modal @next-order="resetOrder" ref="posModal"></pos-modal>
 
   <!-- Note Modal -->
   <div class="modal fade" id="note-modal" tabindex="-1" aria-labelledby="note-modal" aria-hidden="true">
@@ -636,13 +650,13 @@ export default {
       this.searchProductName = "";
       this.fetchProducts({});
     },
-    async handlePayment() {
+    async handlePayment(status) {
       if (this.cart.length === 0) return;
       const payload = {
         date: new Date().toISOString().slice(0, 19).replace("T", " "),
         type: "OFFLINE",
         payment_type: this.selectedPaymentMethod,
-        status: "PAID",
+        status: status,
         customer_name: this.customerName || "Walk-in Customer",
         items: this.cart.map(item => ({
           product_id: item.id,
@@ -665,6 +679,12 @@ export default {
     getCartQty(productId) {
       const item = this.cart.find(i => i.id === productId);
       return item ? item.qty : 0;
+    },
+    loadOrders() {
+      // Ensure the orders are refreshed when the modal is opened
+      if (this.$refs.posModal) {
+        this.$refs.posModal.fetchOrders('PENDING');
+      }
     },
   },
   mounted() {
