@@ -9,10 +9,20 @@
           <div class="table-top">
             <div class="search-set">
               <div class="search-input">
-                <input type="text" placeholder="Search" class="dark-input" />
-                <a href="javascript:void(0);" class="btn btn-searchset"
-                  ><i data-feather="search" class="feather-search"></i
-                ></a>
+                <input
+                  type="text"
+                  placeholder="Search product name"
+                  class="dark-input"
+                  v-model="searchQuery"
+                  @keyup.enter="searchProducts"
+                />
+                <a
+                  href="javascript:void(0);"
+                  class="btn btn-searchset"
+                  @click="searchProducts"
+                >
+                  <i data-feather="search" class="feather-search"></i>
+                </a>
               </div>
             </div>
             <div class="search-path">
@@ -28,7 +38,11 @@
             </div>
             <div class="form-sort">
               <vue-feather type="sliders" class="info-img"></vue-feather>
-              <custom-select :options="Sortby" id="sortby" placeholder="Sort by Date" />
+              <custom-select
+                :options="Sortby"
+                id="sortby"
+                placeholder="Sort by Date"
+              />
             </div>
           </div>
           <!-- /Filter -->
@@ -115,6 +129,7 @@
               :data-source="products"
               :row-selection="{}"
               :pagination="false"
+              :loading="productLoading"
             >
               <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'Product'">
@@ -179,31 +194,94 @@
                 </template>
               </template>
             </a-table>
-            <!-- Pagination -->
-            <div class="pagination-container mt-3" v-if="pagination && pagination.last_page > 1">
-              <ul class="pagination">
+
+            <!-- Pagination with Items Per Page -->
+            <div
+              class="d-flex justify-content-between align-items-center flex-wrap mt-3"
+              v-if="pagination && pagination.last_page > 0"
+            >
+              <div class="d-flex align-items-center mb-2">
+                <span class="me-2">Show</span>
+                <select
+                  class="form-select form-select-sm"
+                  v-model="itemsPerPage"
+                  @change="changeItemsPerPage"
+                  style="width: auto;"
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <span class="ms-2">entries</span>
+              </div>
+
+              <div class="pagination-info mb-2">
+                <span
+                  >Showing {{ pagination.from || 0 }} to {{ pagination.to || 0 }} of
+                  {{ pagination.total }} entries</span
+                >
+              </div>
+
+              <ul class="pagination mb-2">
                 <li
                   class="page-item"
                   :class="{ disabled: pagination.current_page === 1 }"
-                  @click="changePage(pagination.current_page - 1)"
                 >
-                  <a class="page-link" href="javascript:void(0);">&laquo;</a>
+                  <a
+                    class="page-link"
+                    href="javascript:void(0);"
+                    @click="changePage(1)"
+                    >&laquo;</a
+                  >
                 </li>
                 <li
-                  v-for="link in pagination.links"
-                  :key="link.label"
                   class="page-item"
-                  :class="{ active: link.active, disabled: !link.url }"
-                  @click="link.url && changePage(getPageFromUrl(link.url))"
+                  :class="{ disabled: pagination.current_page === 1 }"
                 >
-                  <a class="page-link" href="javascript:void(0);" v-html="link.label"></a>
+                  <a
+                    class="page-link"
+                    href="javascript:void(0);"
+                    @click="changePage(pagination.current_page - 1)"
+                    >&lt;</a
+                  >
+                </li>
+
+                <li
+                  v-for="page in visiblePageNumbers"
+                  :key="page"
+                  class="page-item"
+                  :class="{ active: page === pagination.current_page }"
+                >
+                  <a
+                    class="page-link"
+                    href="javascript:void(0);"
+                    @click="changePage(page)"
+                    >{{ page }}</a
+                  >
+                </li>
+
+                <li
+                  class="page-item"
+                  :class="{ disabled: pagination.current_page === pagination.last_page }"
+                >
+                  <a
+                    class="page-link"
+                    href="javascript:void(0);"
+                    @click="changePage(pagination.current_page + 1)"
+                    >&gt;</a
+                  >
                 </li>
                 <li
                   class="page-item"
                   :class="{ disabled: pagination.current_page === pagination.last_page }"
-                  @click="changePage(pagination.current_page + 1)"
                 >
-                  <a class="page-link" href="javascript:void(0);">&raquo;</a>
+                  <a
+                    class="page-link"
+                    href="javascript:void(0);"
+                    @click="changePage(pagination.last_page)"
+                    >&raquo;</a
+                  >
                 </li>
               </ul>
             </div>
@@ -265,13 +343,52 @@ export default {
       BrandFilter: ["Lenovo", "Nike"],
       PriceFilter: ["Price", "$12500.00", "$12500.00"],
       columns,
+      itemsPerPage: 10, // Default items per page
+      searchQuery: "", // For product name search
+      selectedCategoryId: null, // For category filter
     };
   },
   computed: {
-    ...mapGetters("product", ["products", "pagination", "productError", "productLoading"]),
+    ...mapGetters("product", [
+      "products",
+      "pagination",
+      "productError",
+      "productLoading",
+    ]),
+
+    // Compute visible page numbers for pagination
+    visiblePageNumbers() {
+      if (!this.pagination) return [];
+
+      const current = this.pagination.current_page;
+      const last = this.pagination.last_page;
+
+      // Show up to 5 page numbers
+      if (last <= 5) {
+        // If total pages are 5 or less, show all
+        return Array.from({ length: last }, (_, i) => i + 1);
+      } else {
+        // Always include first, last, current, and 1-2 surrounding pages
+        let pages = [1, last, current];
+
+        // Add one page before and after current if possible
+        if (current > 1) pages.push(current - 1);
+        if (current < last) pages.push(current + 1);
+
+        // Add second page if needed
+        if (current > 3) pages.push(2);
+
+        // Add second-to-last page if needed
+        if (current < last - 2) pages.push(last - 1);
+
+        // Sort the page numbers and remove duplicates
+        return [...new Set(pages)].sort((a, b) => a - b);
+      }
+    },
   },
   methods: {
     ...mapActions("product", ["fetchProducts", "deleteProduct"]),
+
     showConfirmation(productId, productName) {
       Swal.fire({
         title: "Are you sure?",
@@ -290,18 +407,71 @@ export default {
         }
       });
     },
+
     changePage(page) {
-      if (page > 0 && page <= this.pagination.last_page && page !== this.pagination.current_page) {
-        this.fetchProducts(page);
+      if (
+        page > 0 &&
+        page <= this.pagination.last_page &&
+        page !== this.pagination.current_page
+      ) {
+        this.fetchProducts({
+          page,
+          per_page: this.itemsPerPage,
+          product_category_id: this.selectedCategoryId,
+          name: this.searchQuery || undefined,
+        });
       }
     },
+
+    changeItemsPerPage() {
+      // When changing items per page, go back to page 1
+      this.fetchProducts({
+        page: 1,
+        per_page: this.itemsPerPage,
+        product_category_id: this.selectedCategoryId,
+        name: this.searchQuery || undefined,
+      });
+    },
+
+    searchProducts() {
+      // Reset to page 1 when searching
+      this.fetchProducts({
+        page: 1,
+        per_page: this.itemsPerPage,
+        product_category_id: this.selectedCategoryId,
+        name: this.searchQuery || undefined,
+      });
+    },
+
     getPageFromUrl(url) {
       const match = url && url.match(/page=(\d+)/);
       return match ? parseInt(match[1], 10) : 1;
     },
   },
   mounted() {
-    this.fetchProducts();
+    // Initial fetch with default values
+    this.fetchProducts({
+      page: 1,
+      per_page: this.itemsPerPage,
+    });
+  },
+  watch: {
+    // Update itemsPerPage when pagination changes
+    "pagination.per_page"(newValue) {
+      if (newValue && newValue !== this.itemsPerPage) {
+        this.itemsPerPage = newValue;
+      }
+    },
   },
 };
 </script>
+
+<style scoped>
+.pagination {
+  margin-bottom: 0;
+}
+.form-select {
+  min-width: 70px;
+}
+</style>
+

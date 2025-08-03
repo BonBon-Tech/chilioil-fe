@@ -128,15 +128,11 @@
                         >
                           {{ getCartQty(product.id) }}
                         </span>
-<!--                        <h7 class="cat-name">-->
-<!--                          <a href="javascript:void(0);">{{ product.category_name }}</a>-->
-<!--                        </h7>-->
                         <h7 class="product-name">
                           <a href="javascript:void(0);">{{ product.name }}</a>
                         </h7>
                         <div class="d-flex align-items-center justify-content-between price">
-<!--                          <span>{{ product.stock }} Pcs</span>-->
-                          <p>Rp{{ product.price }}</p>
+                          <p>{{ formatIDR(product.price) }}</p>
                         </div>
                       </div>
                     </div>
@@ -223,7 +219,7 @@
                         <div v-if="item.note" style="font-size:11px;color:#666;font-style:italic;margin:2px 0;">
                           Note: {{ item.note }}
                         </div>
-                        <p>Rp{{ item.price }}</p>
+                        <p>{{ formatIDR(item.price) }}</p>
                       </div>
                     </div>
                     <div class="qty-item text-center">
@@ -296,41 +292,19 @@
               </div>
             </div>
             <div class="block-section">
-<!--              <div class="selling-info">-->
-<!--                <div class="row">-->
-<!--                  <div class="col-12 col-sm-4">-->
-<!--                    <div class="input-block">-->
-<!--                      <label>Order Tax</label>-->
-<!--                      <custom-select :options="GST" id="gst" placeholder="GST 5%" />-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                  <div class="col-12 col-sm-4">-->
-<!--                    <div class="input-block">-->
-<!--                      <label>Shipping</label>-->
-<!--                      <custom-select :options="Shipping" id="shippingf" placeholder="15" />-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                  <div class="col-12 col-sm-4">-->
-<!--                    <div class="input-block">-->
-<!--                      <label>Discount</label>-->
-<!--                      <custom-select :options="Discount" id="discountf" placeholder="10%" />-->
-<!--                    </div>-->
-<!--                  </div>-->
-<!--                </div>-->
-<!--              </div>-->
               <div class="order-total">
                 <table class="table table-responsive table-borderless">
                   <tr>
                     <td>Sub Total</td>
-                    <td class="text-end">Rp{{ subTotal }}</td>
+                    <td class="text-end">{{ formatIDR(subTotal) }}</td>
                   </tr>
                   <tr>
                     <td>Sub Total</td>
-                    <td class="text-end">Rp{{ subTotal }}</td>
+                    <td class="text-end">{{ formatIDR(subTotal) }}</td>
                   </tr>
                   <tr>
                     <td>Total</td>
-                    <td class="text-end">Rp{{ total }}</td>
+                    <td class="text-end">{{ formatIDR(total) }}</td>
                   </tr>
                 </table>
               </div>
@@ -367,7 +341,7 @@
             </div>
             <div class="d-grid btn-block">
               <a class="btn btn-secondary" href="javascript:void(0);">
-                Grand Total : Rp{{ total }}
+                Grand Total : {{ formatIDR(total) }}
               </a>
             </div>
             <div class="btn-row d-sm-flex align-items-center justify-content-between">
@@ -535,6 +509,21 @@ export default {
     ...mapActions("category", ["fetchCategories"]),
     ...mapActions("product", ["fetchProducts"]),
     ...mapActions("transaction", ["createTransaction"]),
+
+    // Add formatIDR function to format prices
+    formatIDR(value) {
+      if (value === undefined || value === null) return 'Rp 0,00';
+
+      // Convert to number if it's a string
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+
+      // Format the number to Indonesian Rupiah format
+      return 'Rp ' + num.toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+
     showConfirmation() {
       Swal.fire({
         title: "Are you sure?",
@@ -560,7 +549,10 @@ export default {
     },
     selectCategory(categoryId) {
       this.selectedCategoryId = categoryId;
-      this.fetchProducts({ product_category_id: categoryId });
+      this.fetchProducts({
+        product_category_id: categoryId,
+        per_page: 9999 // Load all products for the selected category
+      });
     },
     addToCart(product) {
       const idx = this.cart.findIndex(item => item.id === product.id);
@@ -629,7 +621,10 @@ export default {
       this.selectedPaymentMethod = method;
     },
     searchProducts() {
-      const params = {};
+      const params = {
+        per_page: 9999 // Load all matching products
+      };
+
       if (this.searchProductName && this.searchProductName.trim() !== "") {
         params.name = this.searchProductName.trim();
       }
@@ -648,7 +643,7 @@ export default {
     resetProductFilter() {
       this.selectedCategoryId = null;
       this.searchProductName = "";
-      this.fetchProducts({});
+      this.fetchProducts({ per_page: 9999 }); // Load all products when resetting filter
     },
     async handlePayment(status) {
       if (this.cart.length === 0) return;
@@ -689,7 +684,12 @@ export default {
   },
   mounted() {
     this.fetchCategories();
-    this.fetchProducts({});
+    this.fetchProducts({ per_page: 9999 }); // Load all products on initial mount
+
+    // Initialize payment method
+    if (this.paymentMethods.length > 0) {
+      this.selectedPaymentMethod = this.paymentMethods[0].value;
+    }
   },
 };
 </script>
