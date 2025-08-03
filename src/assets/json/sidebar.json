@@ -14,10 +14,6 @@
           {
             "menuValue": "Admin Dashboard",
             "route": "/dashboard/admin-dashboard"
-          },
-          {
-            "menuValue": "Sales Dashboard",
-            "route": "/dashboard/sales-dashboard"
           }
         ]
       }
@@ -54,73 +50,10 @@
     "separateRoute": false,
     "menu": [
       {
-        "menuValue": "Sales",
-        "icon": "shopping-cart",
-        "route": "/sales/sales-list",
-        "active_link" : "/sales/sales-list",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Invoices",
-        "icon": "file-text",
-        "route": "/sales/invoice-report",
-        "active_link" : "/sales/invoice-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Sales Return",
-        "icon": "copy",
-        "route": "/sales/sales-returns",
-        "active_link" : "/sales/sales-returnst",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Quotation",
-        "icon": "save",
-        "route": "/sales/quotation-list",
-        "active_link" : "/sales/quotation-list",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
         "menuValue": "POS",
         "icon": "hard-drive",
         "route": "/sales/pos",
         "active_link" : "/sales/pos",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      }
-    ]
-  },
-  {
-    "tittle": "Purchases",
-    "showAsTab": true,
-    "separateRoute": false,
-    "menu": [
-      {
-        "menuValue": "Purchases",
-        "icon": "shopping-bag",
-        "route": "/purchases/purchase-list",
-        "active_link" : "/purchases/purchase-list",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Purchase Order",
-        "icon": "file-minus",
-        "route": "/purchases/purchase-order-report",
-        "active_link" : "/purchases/purchase-order-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Purchase Return",
-        "icon": "refresh-cw",
-        "route": "/purchases/purchase-returns",
-        "active_link" : "/purchases/purchase-returns",
         "hasSubRoute": false,
         "showSubRoute": false
       }
@@ -134,19 +67,18 @@
       {
         "menuValue": "Expenses",
         "icon": "file-text",
-        "active_link" : "finance",
-        "hasSubRoute": true,
-        "showSubRoute": false,
-        "subMenus": [
-          {
-            "menuValue": "Expenses",
-            "route": "/finance/expenses-list"
-          },
-          {
-            "menuValue": "Expense Category",
-            "route": "/finance/expenses-category"
-          }
-        ]
+        "route": "/finance/expenses-list",
+        "active_link": "/finance/expenses-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Expenses Category",
+        "icon": "file-text",
+        "route": "/finance/expenses-category",
+        "active_link": "/finance/expenses-category",
+        "hasSubRoute": false,
+        "showSubRoute": false
       }
     ]
   },
@@ -183,93 +115,6 @@
         "icon": "git-merge",
         "route": "/hrm/designation",
         "active_link": "/hrm/designation",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      }
-    ]
-  },
-  {
-    "tittle": "Reports",
-    "showAsTab": true,
-    "separateRoute": false,
-    "menu": [
-      {
-        "menuValue": "Sales Report",
-        "icon": "bar-chart-2",
-        "route": "/reports/sales-report",
-        "active_link": "/reports/sales-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Purchase Report",
-        "icon": "pie-chart",
-        "route": "/reports/purchase-report",
-        "active_link": "/reports/purchase-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Inventory Report",
-        "icon": "inbox",
-        "route": "/reports/inventory-report",
-        "active_link": "/reports/inventory-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Invoice Report",
-        "icon": "file",
-        "route": "/reports/invoice-report",
-        "active_link": "/reports/invoice-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Supplier Report",
-        "icon": "user-check",
-        "route": "/reports/supplier-report",
-        "active_link": "/reports/supplier-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Customer Report",
-        "icon": "user",
-        "route": "/reports/customer-report",
-        "active_link": "/reports/customer-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Expense Report",
-        "icon": "file",
-        "route": "/reports/expense-report",
-        "active_link": "/reports/expense-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Income Report",
-        "icon": "bar-chart",
-        "route": "/reports/income-report",
-        "active_link": "/reports/income-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Tax Report",
-        "icon": "database",
-        "route": "/reports/tax-report",
-        "active_link": "/reports/tax-report",
-        "hasSubRoute": false,
-        "showSubRoute": false
-      },
-      {
-        "menuValue": "Profit & Loss",
-        "icon": "pie-chart",
-        "route": "/reports/profit-and-loss",
-        "active_link": "/reports/profit-and-loss",
         "hasSubRoute": false,
         "showSubRoute": false
       }
