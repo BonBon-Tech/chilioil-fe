@@ -683,7 +683,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchCategories();
+    this.fetchCategories({ per_page: 9999 }); // Load all categories on initial mount
     this.fetchProducts({ per_page: 9999 }); // Load all products on initial mount
 
     // Initialize payment method

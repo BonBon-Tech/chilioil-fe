@@ -11,21 +11,6 @@
           </div>
         </div>
         <ul class="table-top-head">
-<!--          <li>-->
-<!--            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"-->
-<!--              ><img src="@/assets/img/icons/pdf.svg" alt="img"-->
-<!--            /></a>-->
-<!--          </li>-->
-<!--          <li>-->
-<!--            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"-->
-<!--              ><img src="@/assets/img/icons/excel.svg" alt="img"-->
-<!--            /></a>-->
-<!--          </li>-->
-<!--          <li>-->
-<!--            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"-->
-<!--              ><i data-feather="printer" class="feather-printer"></i-->
-<!--            ></a>-->
-<!--          </li>-->
           <li>
             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"
               @click="refreshCategories"
@@ -61,10 +46,16 @@
           <div class="table-top">
             <div class="search-set">
               <div class="search-input">
-                <input type="text" placeholder="Search" class="dark-input" />
-                <a href="" class="btn btn-searchset"
-                  ><i data-feather="search" class="feather-search"></i
-                ></a>
+                <input
+                  type="text"
+                  placeholder="Search"
+                  class="dark-input"
+                  v-model="searchQuery"
+                  @keyup.enter="searchCategories"
+                />
+                <a href="javascript:void(0);" class="btn btn-searchset" @click="searchCategories">
+                  <i data-feather="search" class="feather-search"></i>
+                </a>
               </div>
             </div>
             <div class="search-path">
@@ -147,6 +138,8 @@
               :columns="columns"
               :data-source="categories"
               :row-selection="{}"
+              :pagination="false"
+              :loading="loading"
             >
               <template #bodyCell="{ column, record }">
                 <template v-if="column.key === 'Status'">
@@ -181,6 +174,66 @@
                 </template>
               </template>
             </a-table>
+
+            <!-- Pagination Controls -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap mt-3" v-if="pagination && pagination.last_page > 0">
+              <div class="d-flex align-items-center mb-2">
+                <span class="me-2">Show</span>
+                <select
+                  class="form-select form-select-sm"
+                  v-model="itemsPerPage"
+                  @change="changeItemsPerPage"
+                  style="width: auto;"
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <span class="ms-2">entries</span>
+              </div>
+
+              <div class="pagination-info mb-2">
+                <span>Showing {{ pagination.from || 0 }} to {{ pagination.to || 0 }} of {{ pagination.total }} entries</span>
+              </div>
+
+              <ul class="pagination mb-2">
+                <li
+                  class="page-item"
+                  :class="{ disabled: pagination.current_page === 1 }"
+                >
+                  <a class="page-link" href="javascript:void(0);" @click="changePage(1)">&laquo;</a>
+                </li>
+                <li
+                  class="page-item"
+                  :class="{ disabled: pagination.current_page === 1 }"
+                >
+                  <a class="page-link" href="javascript:void(0);" @click="changePage(pagination.current_page - 1)">&lt;</a>
+                </li>
+
+                <li
+                  v-for="page in visiblePageNumbers"
+                  :key="page"
+                  class="page-item"
+                  :class="{ active: page === pagination.current_page }"
+                >
+                  <a class="page-link" href="javascript:void(0);" @click="changePage(page)">{{ page }}</a>
+                </li>
+
+                <li
+                  class="page-item"
+                  :class="{ disabled: pagination.current_page === pagination.last_page }"
+                >
+                  <a class="page-link" href="javascript:void(0);" @click="changePage(pagination.current_page + 1)">&gt;</a>
+                </li>
+                <li
+                  class="page-item"
+                  :class="{ disabled: pagination.current_page === pagination.last_page }"
+                >
+                  <a class="page-link" href="javascript:void(0);" @click="changePage(pagination.last_page)">&raquo;</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -247,14 +300,48 @@ export default {
       CategoryStatus: ["Choose Status", "Active", "Inactive"],
       data,
       columns,
+      loading: false,
+      itemsPerPage: 10,
+      currentPage: 1,
+      searchQuery: '',
     };
   },
   computed: {
-    ...mapGetters("category", ["categories", "category", "categoryError"]),
+    ...mapGetters("category", ["categories", "category", "categoryError", "pagination"]),
     ...mapGetters("alert", ["alertType", "alertMessage", "alertVisible"]),
+    ...mapGetters("loading", ["loadingVisible"]),
     alertClass() {
       return this.alertType === "success" ? "alert-success" : "alert-danger";
     },
+    // Compute visible page numbers for pagination
+    visiblePageNumbers() {
+      if (!this.pagination) return [];
+
+      const current = this.pagination.current_page;
+      const last = this.pagination.last_page;
+
+      // Show up to 5 page numbers
+      if (last <= 5) {
+        // If total pages are 5 or less, show all
+        return Array.from({ length: last }, (_, i) => i + 1);
+      } else {
+        // Always include first, last, current, and 1-2 surrounding pages
+        let pages = [1, last, current];
+
+        // Add one page before and after current if possible
+        if (current > 1) pages.push(current - 1);
+        if (current < last) pages.push(current + 1);
+
+        // Add second page if needed
+        if (current > 3) pages.push(2);
+
+        // Add second-to-last page if needed
+        if (current < last - 2) pages.push(last - 1);
+
+        // Sort the page numbers and remove duplicates
+        return [...new Set(pages)].sort((a, b) => a - b);
+      }
+    }
   },
   methods: {
     ...mapActions("category", [
@@ -267,10 +354,59 @@ export default {
       "clearError",
     ]),
     ...mapActions("alert", ["triggerAlert", "closeAlert"]),
+
     refreshCategories() {
-      this.fetchCategories();
+      this.loading = true;
+      this.fetchCategories({
+        page: this.currentPage,
+        per_page: this.itemsPerPage,
+        search: this.searchQuery
+      }).finally(() => {
+        this.loading = false;
+      });
       this.triggerAlert({ type: "success", message: "Categories refreshed successfully." });
     },
+
+    changePage(page) {
+      if (page > 0 && page <= this.pagination.last_page && page !== this.pagination.current_page) {
+        this.currentPage = page;
+        this.loading = true;
+        this.fetchCategories({
+          page,
+          per_page: this.itemsPerPage,
+          search: this.searchQuery
+        }).finally(() => {
+          this.loading = false;
+        });
+      }
+    },
+
+    changeItemsPerPage() {
+      // When changing items per page, go back to page 1
+      this.currentPage = 1;
+      this.loading = true;
+      this.fetchCategories({
+        page: 1,
+        per_page: this.itemsPerPage,
+        search: this.searchQuery
+      }).finally(() => {
+        this.loading = false;
+      });
+    },
+
+    searchCategories() {
+      // Reset to page 1 when searching
+      this.currentPage = 1;
+      this.loading = true;
+      this.fetchCategories({
+        page: 1,
+        per_page: this.itemsPerPage,
+        search: this.searchQuery
+      }).finally(() => {
+        this.loading = false;
+      });
+    },
+
     showConfirmation(record) {
       Swal.fire({
         title: "Are you sure?",
@@ -304,7 +440,40 @@ export default {
     },
   },
   mounted() {
-    this.fetchCategories();
+    this.loading = true;
+    this.fetchCategories({
+      page: this.currentPage,
+      per_page: this.itemsPerPage
+    }).finally(() => {
+      this.loading = false;
+    });
   },
+  watch: {
+    // Update itemsPerPage when pagination changes
+    'pagination.per_page'(newValue) {
+      if (newValue && newValue !== this.itemsPerPage) {
+        this.itemsPerPage = newValue;
+      }
+    },
+    // Update currentPage when pagination changes
+    'pagination.current_page'(newValue) {
+      if (newValue && newValue !== this.currentPage) {
+        this.currentPage = newValue;
+      }
+    },
+    // Watch for loading state changes
+    loadingVisible(newValue) {
+      this.loading = newValue;
+    }
+  }
 };
 </script>
+
+<style scoped>
+.pagination {
+  margin-bottom: 0;
+}
+.form-select {
+  min-width: 70px;
+}
+</style>
