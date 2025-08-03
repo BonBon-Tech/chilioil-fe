@@ -7,6 +7,7 @@ export default {
         categories: [],
         category: null,
         error: null,
+        pagination: null,
     },
     mutations: {
         setCategories(state, categories) {
@@ -14,6 +15,9 @@ export default {
         },
         setCategory(state, category) {
             state.category = category;
+        },
+        setPagination(state, pagination) {
+            state.pagination = pagination;
         },
         clearCategory(state) {
             state.category = null;
@@ -26,18 +30,38 @@ export default {
         },
     },
     actions: {
-        async fetchCategories({ commit, dispatch }) {
+        async fetchCategories({ commit, dispatch }, { page = 1, per_page = 10, search = '' } = {}) {
             commit('clearError');
             dispatch('loading/showLoading', null, { root: true });
             try {
+                let url = `/api/v1/product/categories?page=${page}&per_page=${per_page}`;
+                if (search) {
+                    url += `&search=${encodeURIComponent(search)}`;
+                }
+
                 const res = await requestWithAlert(
                     'get',
-                    '/api/v1/product/categories',
+                    url,
                     {},
                     {},
                     { error: true }
                 );
-                commit('setCategories', res.data.data || []);
+
+                // Extract pagination data
+                const data = res.data.data;
+                commit('setCategories', data.data || []);
+
+                // Set pagination information
+                if (data.current_page !== undefined) {
+                    commit('setPagination', {
+                        current_page: data.current_page,
+                        last_page: data.last_page,
+                        per_page: data.per_page,
+                        total: data.total,
+                        from: data.from,
+                        to: data.to
+                    });
+                }
             } catch (err) {
                 commit('setError', err.response?.data?.message || err.message || 'Failed to fetch categories');
             } finally {
@@ -139,6 +163,7 @@ export default {
         categories: (state) => state.categories,
         category: (state) => state.category,
         categoryError: (state) => state.error,
+        pagination: (state) => state.pagination,
     },
 };
 

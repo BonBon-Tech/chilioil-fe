@@ -112,7 +112,7 @@
                       {{ item.name || item.product_name || item.product_id }}
                     </td>
                     <td id="text-center">{{ item.qty ?? item.quantity ?? 0 }}</td>
-                    <td colspan="2" id="text-center">Rp{{ item.price * (item.qty ?? 0) }}</td>
+                    <td colspan="2" id="text-center">{{ formatIDR(item.price * (item.qty ?? 0)) }}</td>
                   </tr>
                   <tr v-if="item.note !== '' && item.note">
                     <td colspan="7">Note : {{ item.note }}</td>
@@ -126,11 +126,11 @@
               <table class="width-58">
                 <tr class="width-58">
                   <td colspan="2" style="padding:0;">Sub Total</td>
-                  <td colspan="2" style="text-align:right;padding:0;">Rp{{ subTotal }}</td>
+                  <td colspan="2" style="text-align:right;padding:0;">{{ formatIDR(subTotal) }}</td>
                 </tr>
                 <tr class="width-58">
                   <td colspan="2" style="padding:0;">Total Bill</td>
-                  <td colspan="2" style="text-align:right;padding:0;">Rp{{ subTotal }}</td>
+                  <td colspan="2" style="text-align:right;padding:0;">{{ formatIDR(subTotal) }}</td>
                 </tr>
                 <tr class="width-58">
                   <td colspan="2" style="padding:0;">Payment</td>
@@ -191,7 +191,7 @@
                   </tr>
                   <tr>
                     <td>Total Amount</td>
-                    <td>: Rp{{ selectedTransaction.total }}</td>
+                    <td>: {{ formatIDR(selectedTransaction.total) }}</td>
                   </tr>
                 </table>
               </div>
@@ -227,19 +227,19 @@
                         </div>
                       </div>
                     </td>
-                    <td>Rp{{ item.price }}</td>
+                    <td>{{ formatIDR(item.price) }}</td>
                     <td>{{ item.qty }}</td>
-                    <td>Rp{{ item.total_price || (item.price * item.qty) }}</td>
+                    <td>{{ formatIDR(item.total_price || (item.price * item.qty)) }}</td>
                   </tr>
                 </tbody>
                 <tfoot>
                   <tr>
                     <td colspan="4" class="text-end fw-bold">Subtotal</td>
-                    <td>Rp{{ selectedTransaction.sub_total }}</td>
+                    <td>{{ formatIDR(selectedTransaction.sub_total) }}</td>
                   </tr>
                   <tr>
                     <td colspan="4" class="text-end fw-bold">Total</td>
-                    <td>Rp{{ selectedTransaction.total }}</td>
+                    <td>{{ formatIDR(selectedTransaction.total) }}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -459,7 +459,7 @@
                           <tr>
                             <td>Total</td>
                             <td class="colon">:</td>
-                            <td class="text">Rp{{ order.total }}</td>
+                            <td class="text">{{ formatIDR(order.total) }}</td>
                           </tr>
                           <tr>
                             <td>Date</td>
@@ -520,13 +520,13 @@
                                 <div v-if="item.note" class="small text-muted">Note: {{ item.note }}</div>
                               </td>
                               <td>{{ item.qty }}</td>
-                              <td class="text-end">Rp{{ item.total_price || (item.price * item.qty) }}</td>
+                              <td class="text-end">{{ formatIDR(item.total_price || (item.price * item.qty)) }}</td>
                             </tr>
                           </tbody>
                           <tfoot>
                             <tr>
                               <td colspan="3" class="text-end fw-bold">Total</td>
-                              <td class="text-end fw-bold">Rp{{ order.total }}</td>
+                              <td class="text-end fw-bold">{{ formatIDR(order.total) }}</td>
                             </tr>
                           </tfoot>
                         </table>
@@ -602,7 +602,7 @@
                           <tr>
                             <td>Total</td>
                             <td class="colon">:</td>
-                            <td class="text">Rp{{ order.total }}</td>
+                            <td class="text">{{ formatIDR(order.total) }}</td>
                           </tr>
                           <tr>
                             <td>Date</td>
@@ -655,13 +655,13 @@
                                 <div v-if="item.note" class="small text-muted">Note: {{ item.note }}</div>
                               </td>
                               <td>{{ item.qty }}</td>
-                              <td class="text-end">Rp{{ item.total_price || (item.price * item.qty) }}</td>
+                              <td class="text-end">{{ formatIDR(item.total_price || (item.price * item.qty)) }}</td>
                             </tr>
                           </tbody>
                           <tfoot>
                             <tr>
                               <td colspan="3" class="text-end fw-bold">Total</td>
-                              <td class="text-end fw-bold">Rp{{ order.total }}</td>
+                              <td class="text-end fw-bold">{{ formatIDR(order.total) }}</td>
                             </tr>
                           </tfoot>
                         </table>
@@ -763,6 +763,21 @@ export default {
       "getTransaction",
       "updateTransactionStatus"
     ]),
+
+    // Add formatIDR function to format prices
+    formatIDR(value) {
+      if (value === undefined || value === null) return 'Rp 0,00';
+
+      // Convert to number if it's a string
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+
+      // Format the number to Indonesian Rupiah format
+      return 'Rp ' + num.toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+
     handleNextOrder() {
       this.$emit('next-order');
       this.$nextTick(() => {

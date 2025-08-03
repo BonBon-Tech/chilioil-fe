@@ -39,13 +39,13 @@ export default {
         },
     },
     actions: {
-        async fetchProducts({ commit, dispatch }, { page = 1, product_category_id, name } = {}) {
+        async fetchProducts({ commit, dispatch }, { page = 1, per_page = 10, product_category_id, name } = {}) {
             commit('setLoading', true);
             commit('clearError');
             dispatch('loading/showLoading', null, { root: true });
             try {
                 // Build query string with optional params
-                let query = `/api/v1/products?page=${page}`;
+                let query = `/api/v1/products?page=${page}&per_page=${per_page}`;
                 if (product_category_id) query += `&product_category_id=${encodeURIComponent(product_category_id)}`;
                 if (name) query += `&name=${encodeURIComponent(name)}`;
                 const res = await requestWithAlert(
