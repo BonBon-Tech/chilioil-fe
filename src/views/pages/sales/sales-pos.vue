@@ -111,7 +111,7 @@
                       :key="product.id"
                       class="col-sm-4 col-md-4 col-lg-4 col-xl-4 pe-2"
                     >
-                      <div class="product-info default-cover card" @click="addToCart(product)" style="cursor:pointer; position:relative;">
+                      <div class="product-info default-cover card" @click="openProductModal(product)" data-bs-toggle="modal" data-bs-target="#product-selection-modal" style="cursor:pointer; position:relative;">
                         <a href="javascript:void(0);" class="img-bg">
                           <img
                             v-if="product.image_url"
@@ -128,9 +128,9 @@
                         >
                           {{ getCartQty(product.id) }}
                         </span>
-                        <h7 class="product-name">
+                        <h6 class="product-name">
                           <a href="javascript:void(0);">{{ product.name }}</a>
-                        </h7>
+                        </h6>
                         <div class="d-flex align-items-center justify-content-between price">
                           <p>{{ formatIDR(product.price) }}</p>
                         </div>
@@ -223,14 +223,14 @@
                       </div>
                     </div>
                     <div class="qty-item text-center">
-                      <a
-                        href="javascript:void(0);"
-                        class="dec d-flex justify-content-center align-items-center"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="minus"
-                        @click="decrementQty(item)"
-                      ><vue-feather type="minus-circle" class="feather-14"></vue-feather></a>
+<!--                      <a-->
+<!--                        href="javascript:void(0);"-->
+<!--                        class="dec d-flex justify-content-center align-items-center"-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        title="minus"-->
+<!--                        @click="decrementQty(item)"-->
+<!--                      ><vue-feather type="minus-circle" class="feather-14"></vue-feather></a>-->
                       <input
                         type="text"
                         class="form-control text-center"
@@ -238,23 +238,22 @@
                         :value="item.qty"
                         readonly
                       />
-                      <a
-                        href="javascript:void(0);"
-                        class="inc d-flex justify-content-center align-items-center"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="plus"
-                        @click="incrementQty(item)"
-                      ><vue-feather type="plus-circle" class="feather-14"></vue-feather></a>
+<!--                      <a-->
+<!--                        href="javascript:void(0);"-->
+<!--                        class="inc d-flex justify-content-center align-items-center"-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        title="plus"-->
+<!--                        @click="incrementQty(item)"-->
+<!--                      ><vue-feather type="plus-circle" class="feather-14"></vue-feather></a>-->
                     </div>
                     <div class="d-flex align-items-center action">
                       <a
                         class="btn-icon note-icon me-2"
                         href="javascript:void(0);"
-                        @click="toggleNoteInput(item)"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Add Note"
+                        @click="editProductModal(item)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#product-selection-modal"
                       >
                         <vue-feather type="edit-3" class="feather-14"></vue-feather>
                       </a>
@@ -268,26 +267,26 @@
                     </div>
                   </div>
                   <!-- Note input - appears when note button is clicked -->
-                  <div v-if="item.showNoteInput" class="mt-2" style="width:100%;">
-                    <div class="input-group input-group-sm">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Add your note here..."
-                        v-model="item.note"
-                        @keyup.enter="saveNote(item)"
-                        @blur="saveNote(item)"
-                        :ref="`noteInput_${item.id}`"
-                      />
-                      <button
-                        class="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        @click="saveNote(item)"
-                      >
-                        <vue-feather type="check" class="feather-12"></vue-feather>
-                      </button>
-                    </div>
-                  </div>
+<!--                  <div v-if="item.showNoteInput" class="mt-2" style="width:100%;">-->
+<!--                    <div class="input-group input-group-sm">-->
+<!--                      <input-->
+<!--                        type="text"-->
+<!--                        class="form-control"-->
+<!--                        placeholder="Add your note here..."-->
+<!--                        v-model="item.note"-->
+<!--                        @keyup.enter="saveNote(item)"-->
+<!--                        @blur="saveNote(item)"-->
+<!--                        :ref="`noteInput_${item.id}`"-->
+<!--                      />-->
+<!--                      <button-->
+<!--                        class="btn btn-outline-secondary btn-sm"-->
+<!--                        type="button"-->
+<!--                        @click="saveNote(item)"-->
+<!--                      >-->
+<!--                        <vue-feather type="check" class="feather-12"></vue-feather>-->
+<!--                      </button>-->
+<!--                    </div>-->
+<!--                  </div>-->
                 </div>
               </div>
             </div>
@@ -385,6 +384,105 @@
     data-bs-target="#payment-completed"
   ></button>
   <pos-modal @next-order="resetOrder" ref="posModal"></pos-modal>
+
+  <!-- Product Selection Modal -->
+  <div class="modal fade" id="product-selection-modal" tabindex="-1" aria-labelledby="product-selection-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="product-selection-modal-label">Add to Cart</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedProduct" class="product-selection-content">
+            <!-- Product Information -->
+            <div class="d-flex align-items-center mb-3">
+              <div class="product-image me-3">
+                <img
+                  :src="selectedProduct.image_url"
+                  alt="Product"
+                  style="width:100px;height:100px;object-fit:contain;border-radius:5px;"
+                >
+              </div>
+              <div>
+                <h5>{{ selectedProduct.name }}</h5>
+                <p class="mb-0 text-primary">{{ formatIDR(selectedProduct.price) }}</p>
+              </div>
+            </div>
+
+            <!-- Quantity Selection -->
+            <div class="form-group mb-3">
+              <label class="form-label">Quantity</label>
+              <div class="input-group">
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  @click="decreaseModalQty"
+                  :disabled="modalQty <= 1"
+                >
+                  <vue-feather type="minus" class="feather-14"></vue-feather>
+                </button>
+                <input
+                  type="text"
+                  class="form-control text-center"
+                  :value="modalQty"
+                  @input="handleQtyInput"
+                  @blur="validateModalQty"
+                  min="1"
+                >
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  @click="increaseModalQty"
+                  :disabled="modalQty >= (selectedProduct.stock || 99999)"
+                >
+                  <vue-feather type="plus" class="feather-14"></vue-feather>
+                </button>
+              </div>
+            </div>
+
+            <!-- Note Input -->
+            <div class="form-group mb-3">
+              <label class="form-label">Note (Optional)</label>
+              <textarea
+                class="form-control"
+                v-model="modalNote"
+                rows="2"
+                placeholder="Add special instructions here..."
+              ></textarea>
+            </div>
+
+            <!-- Total Price -->
+            <div class="d-flex justify-content-between align-items-center border-top border-bottom py-2 mb-3">
+              <h6 class="mb-0">Total Price:</h6>
+              <h5 class="mb-0 text-primary">{{ formatIDR(selectedProduct.price * modalQty) }}</h5>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary m-0"
+            @click="addToCartFromModal"
+            data-bs-dismiss="modal"
+            :disabled="!selectedProduct || modalQty < 1"
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Product Selection Modal -->
 
   <!-- Note Modal -->
   <div class="modal fade" id="note-modal" tabindex="-1" aria-labelledby="note-modal" aria-hidden="true">
@@ -484,6 +582,11 @@ export default {
       customerName: "",
       selectedItem: null,
       noteText: "",
+      // New properties for product selection modal
+      selectedProduct: null,
+      modalQty: 1,
+      modalNote: "",
+      productSelectionModal: null,
     }
   },
   computed: {
@@ -554,21 +657,99 @@ export default {
         per_page: 9999 // Load all products for the selected category
       });
     },
-    addToCart(product) {
-      const idx = this.cart.findIndex(item => item.id === product.id);
-      if (idx !== -1) {
-        // Already in cart, increment qty
-        if (this.cart[idx].qty < (product.stock || 99999)) {
-          this.cart[idx].qty += 1;
-        }
+    editProductModal(cart) {
+      this.selectedProduct = this.products.find(p => p.id === cart.id);
+      this.modalQty = cart.qty;
+      this.modalNote = cart.note || "";
+    },
+    // New method to open product selection modal
+    openProductModal(product) {
+      this.selectedProduct = product;
+
+      // Check if product already in cart and set initial qty
+      const existingItem = this.cart.find(item => item.id === product.id);
+      if (existingItem) {
+        this.modalQty = existingItem.qty;
+        this.modalNote = existingItem.note || "";
       } else {
+        this.modalQty = 1;
+        this.modalNote = "";
+      }
+    },
+    // Method to increase qty in the modal
+    increaseModalQty() {
+      if (this.selectedProduct && this.modalQty < (this.selectedProduct.stock || 99999)) {
+        this.modalQty++;
+      }
+    },
+    // Method to decrease qty in the modal
+    decreaseModalQty() {
+      if (this.modalQty > 1) {
+        this.modalQty--;
+      }
+    },
+    // New method to handle direct input changes
+    handleQtyInput(event) {
+      // Get the input value
+      const value = event.target.value;
+
+      // Only allow numbers
+      if (/^\d*$/.test(value)) {
+        // Update modalQty with the raw input (allow empty string temporarily)
+        this.modalQty = value === '' ? '' : parseInt(value, 10) || '';
+      }
+    },
+    // Method to validate manual input of quantity
+    validateModalQty() {
+      // If the input is empty or not a number, set to 1
+      if (this.modalQty === '' || isNaN(this.modalQty)) {
+        this.modalQty = 1;
+        return;
+      }
+
+      // Convert to number if it's a string
+      this.modalQty = parseInt(this.modalQty, 10);
+
+      // Ensure minimum qty is 1
+      if (this.modalQty < 1) {
+        this.modalQty = 1;
+      }
+
+      // Ensure maximum qty respects stock limit
+      const maxQty = this.selectedProduct?.stock || 99999;
+      if (this.modalQty > maxQty) {
+        this.modalQty = maxQty;
+      }
+    },
+    // Method to add product to cart from the modal
+    addToCartFromModal() {
+      // Ensure valid quantity before adding to cart
+      this.validateModalQty();
+
+      if (!this.selectedProduct) return;
+
+      const idx = this.cart.findIndex(item => item.id === this.selectedProduct.id);
+      if (idx !== -1) {
+        // Update existing item in cart
+        this.cart[idx].qty = this.modalQty;
+        this.cart[idx].note = this.modalNote;
+      } else {
+        // Add new item to cart
         this.cart.push({
-          ...product,
-          qty: 1,
-          note: "", // Add note field
-          showNoteInput: false, // Add field to control note input visibility
+          ...this.selectedProduct,
+          qty: this.modalQty,
+          note: this.modalNote,
+          showNoteInput: false,
         });
       }
+
+      // Reset modal data
+      this.selectedProduct = null;
+      this.modalQty = 1;
+      this.modalNote = "";
+    },
+    addToCart(product) {
+      this.openProductModal(product);
     },
     toggleNoteInput(item) {
       const idx = this.cart.findIndex(i => i.id === item.id);
@@ -638,7 +819,10 @@ export default {
       this.selectedPaymentMethod = this.paymentMethods[0]?.value || null;
       this.searchProductName = "";
       this.customerName = "";
-      // Optionally reset other fields if needed
+      // Reset modal data as well
+      this.selectedProduct = null;
+      this.modalQty = 1;
+      this.modalNote = "";
     },
     resetProductFilter() {
       this.selectedCategoryId = null;
@@ -693,3 +877,28 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Add custom styles for the product selection modal */
+.product-selection-content {
+  max-width: 100%;
+}
+
+/* Remove spinner arrows from number input */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Improve the styling of the quantity input to make editing easier */
+.form-control.text-center {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  text-align: center;
+  cursor: text;
+}
+</style>
