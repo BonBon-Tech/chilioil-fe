@@ -198,55 +198,49 @@
 
   <!-- details popup -->
   <div class="modal fade" id="sales-details-new">
-    <div class="modal-dialog sales-details-modal">
-      <div class="modal-content">
-        <div class="page-wrapper details-blk">
-          <div class="content p-0">
-            <div class="page-header p-4 mb-0">
-              <div class="add-item d-flex">
-                <div class="page-title modal-datail">
-                  <h4>Sales Detail : SL0101</h4>
+      <div class="modal-dialog sales-details-modal">
+        <div class="modal-content">
+          <div class="page-wrapper details-blk">
+            <div class="content p-0">
+              <div class="page-header p-4 mb-0">
+                <div class="add-item d-flex">
+                  <div class="page-title modal-datail">
+                    <h4>Sales Detail : {{ transaction?.code }}</h4>
+                  </div>
                 </div>
-                <div class="page-btn">
-                  <a href="javascript:void(0);" class="btn btn-added"
-                    ><vue-feather type="plus-circle" class="me-2"></vue-feather> Add New
-                    Sales</a
-                  >
-                </div>
+                <!--              <ul class="table-top-head">-->
+                <!--                <li>-->
+                <!--                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"-->
+                <!--                    ><vue-feather-->
+                <!--                      type="edit"-->
+                <!--                      class="action-edit sales-action"-->
+                <!--                    ></vue-feather-->
+                <!--                  ></a>-->
+                <!--                </li>-->
+                <!--                <li>-->
+                <!--                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"-->
+                <!--                    ><img src="@/assets/img/icons/pdf.svg" alt="img"-->
+                <!--                  /></a>-->
+                <!--                </li>-->
+                <!--                <li>-->
+                <!--                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"-->
+                <!--                    ><img src="@/assets/img/icons/excel.svg" alt="img"-->
+                <!--                  /></a>-->
+                <!--                </li>-->
+                <!--                <li>-->
+                <!--                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"-->
+                <!--                    ><vue-feather type="printer" class="feather-rotate-ccw"></vue-feather-->
+                <!--                  ></a>-->
+                <!--                </li>-->
+                <!--              </ul>-->
               </div>
-              <ul class="table-top-head">
-                <li>
-                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"
-                    ><vue-feather
-                      type="edit"
-                      class="action-edit sales-action"
-                    ></vue-feather
-                  ></a>
-                </li>
-                <li>
-                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"
-                    ><img src="@/assets/img/icons/pdf.svg" alt="img"
-                  /></a>
-                </li>
-                <li>
-                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"
-                    ><img src="@/assets/img/icons/excel.svg" alt="img"
-                  /></a>
-                </li>
-                <li>
-                  <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"
-                    ><vue-feather type="printer" class="feather-rotate-ccw"></vue-feather
-                  ></a>
-                </li>
-              </ul>
-            </div>
 
-            <div class="card">
-              <div class="card-body">
-                <form @submit.prevent="submitForm">
-                  <div
-                    class="invoice-box table-height"
-                    style="
+              <div class="card">
+                <div class="card-body">
+                  <form @submit.prevent="submitForm">
+                    <div
+                        class="invoice-box table-height"
+                        style="
                       max-width: 1600px;
                       width: 100%;
                       overflow: auto;
@@ -255,216 +249,80 @@
                       line-height: 24px;
                       color: #555;
                     "
-                  >
-                    <div class="sales-details-items d-flex">
-                      <div class="details-item">
-                        <h6>Customer Info</h6>
-                        <p>
-                          walk-in-customer<br />
-                          walk-in-customer@example.com<br />
-                          123456780<br />
-                          N45 , Dhaka
-                        </p>
-                      </div>
-                      <div class="details-item">
-                        <h6>Company Info</h6>
-                        <p>
-                          DGT<br />
-                          admin@example.com<br />
-                          6315996770<br />
-                          3618 Abia Martin Drive
-                        </p>
-                      </div>
-                      <div class="details-item">
-                        <h6>Invoice Info</h6>
-                        <p>
-                          Reference<br />
-                          Payment Status<br />
-                          Status
-                        </p>
-                      </div>
-                      <div class="details-item">
-                        <h5>
-                          <span>SL0101</span>Paid<br />
-                          Completed
-                        </h5>
-                      </div>
-                    </div>
-                    <h5 class="order-text">Order Summary</h5>
-                    <div class="table-responsive no-pagination">
-                      <table class="table datanew">
-                        <thead>
+                    >
+                      <h5 class="order-text">Order Summary</h5>
+                      <div class="table-responsive no-pagination">
+                        <table class="table datanew">
+                          <thead>
                           <tr>
                             <th>Product</th>
+                            <th>Code</th>
                             <th>Qty</th>
-                            <th>Purchase Price($)</th>
-                            <th>Discount($)</th>
-                            <th>Tax(%)</th>
-                            <th>Tax Amount($)</th>
-                            <th>Unit Cost($)</th>
-                            <th>Total Cost(%)</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Note</th>
+                            <th>Store</th>
                           </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>
-                              <div class="productimgname">
-                                <a
-                                  href="javascript:void(0);"
-                                  class="product-img stock-img"
-                                >
-                                  <img
-                                    src="@/assets/img/products/stock-img-02.png"
-                                    alt="product"
-                                  />
-                                </a>
-                                <a href="javascript:void(0);">Nike Jordan</a>
-                              </div>
-                            </td>
-                            <td>
-                              <div class="product-quantity">
-                                <span class="quantity-btn"
-                                  >+<vue-feather
-                                    type="plus-circle"
-                                    class="plus-circle"
-                                  ></vue-feather
-                                ></span>
-                                <input type="text" class="quntity-input" value="2" />
-                                <span class="quantity-btn"
-                                  ><vue-feather
-                                    type="minus-circle"
-                                    class="search"
-                                  ></vue-feather
-                                ></span>
-                              </div>
-                            </td>
-                            <td>2000</td>
-                            <td>500</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td>1500</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div class="productimgname">
-                                <a
-                                  href="javascript:void(0);"
-                                  class="product-img stock-img"
-                                >
-                                  <img
-                                    src="@/assets/img/products/stock-img-03.png"
-                                    alt="product"
-                                  />
-                                </a>
-                                <a href="javascript:void(0);">Apple Series 5 Watch</a>
-                              </div>
-                            </td>
-                            <td>
-                              <div class="product-quantity">
-                                <span class="quantity-btn"
-                                  >+<vue-feather
-                                    type="plus-circle"
-                                    class="plus-circle"
-                                  ></vue-feather
-                                ></span>
-                                <input type="text" class="quntity-input" value="2" />
-                                <span class="quantity-btn"
-                                  ><vue-feather
-                                    type="minus-circle"
-                                    class="search"
-                                  ></vue-feather
-                                ></span>
-                              </div>
-                            </td>
-                            <td>3000</td>
-                            <td>400</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td>1700</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <div class="productimgname">
-                                <a
-                                  href="javascript:void(0);"
-                                  class="product-img stock-img"
-                                >
-                                  <img
-                                    src="@/assets/img/products/stock-img-05.png"
-                                    alt="product"
-                                  />
-                                </a>
-                                <a href="javascript:void(0);">Lobar Handy</a>
-                              </div>
-                            </td>
-                            <td>
-                              <div class="product-quantity">
-                                <span class="quantity-btn"
-                                  >+<vue-feather
-                                    type="plus-circle"
-                                    class="plus-circle"
-                                  ></vue-feather
-                                ></span>
-                                <input type="text" class="quntity-input" value="2" />
-                                <span class="quantity-btn"
-                                  ><vue-feather
-                                    type="minus-circle"
-                                    class="search"
-                                  ></vue-feather
-                                ></span>
-                              </div>
-                            </td>
-                            <td>2500</td>
-                            <td>500</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td>0.00</td>
-                            <td>2000</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            <template v-for="item in transaction?.transaction_items" :key="item.id">
+                              <tr>
+                                <td>
+                                  <div class="productimgname">
+                                    <a
+                                        href="javascript:void(0);"
+                                        class="product-img stock-img"
+                                    >
+                                      <img
+                                          :src="item.image_path"
+                                          alt="product"
+                                      />
+                                    </a>
+                                    <a href="javascript:void(0);">{{ item.name }}</a>
+                                  </div>
+                                </td>
+                                <td>
+                                  {{ item.code }}
+                                </td>
+                                <td>
+                                  {{ item.qty }}
+                                </td>
+                                <td>{{ item.price }}</td>
+                                <td>{{ item.total_price }}</td>
+                                <td>{{ item.note }}</td>
+                                <td>{{ item.store.name }}</td>
+                              </tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="row">
                     <div class="row">
-                      <div class="col-lg-6 ms-auto">
-                        <div class="total-order w-100 max-widthauto m-auto mb-4">
-                          <ul>
-                            <li>
-                              <h4>Order Tax</h4>
-                              <h5>$ 0.00</h5>
-                            </li>
-                            <li>
-                              <h4>Discount</h4>
-                              <h5>$ 0.00</h5>
-                            </li>
-                            <li>
-                              <h4>Grand Total</h4>
-                              <h5>$ 5200.00</h5>
-                            </li>
-                            <li>
-                              <h4>Paid</h4>
-                              <h5>$ 5200.00</h5>
-                            </li>
-                            <li>
-                              <h4>Due</h4>
-                              <h5>$ 0.00</h5>
-                            </li>
-                          </ul>
+                      <div class="row">
+                        <div class="col-lg-6 ms-auto">
+                          <div class="total-order w-100 max-widthauto m-auto mb-4">
+                            <ul>
+                              <li>
+                                <h4>Sub Total</h4>
+                                <h5>{{ formatIDR(transaction?.sub_total) }}</h5>
+                              </li>
+                              <li>
+                                <h4>Total</h4>
+                                <h5>{{ formatIDR(transaction?.total) }}</h5>
+                              </li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   </div>
   <!-- /details popup -->
 
@@ -1040,6 +898,7 @@
 
 <script>
 import Swal from "sweetalert2";
+import {mapGetters} from "vuex";
 
 export default {
   data() {
@@ -1052,6 +911,14 @@ export default {
       Online: ["Choose", "Online", "Cash"],
       OnlineOne: ["Choose", "Online", "Cash"],
     };
+  },
+  computed: {
+    ...mapGetters('sales', [
+      'transaction',
+      'pagination',
+      'isLoading',
+      'error'
+    ]),
   },
   methods: {
     showConfirmation() {
@@ -1079,6 +946,18 @@ export default {
     },
     submitForm() {
       this.$router.push("/sales/sales-list");
+    },
+    formatIDR(value) {
+      if (value === undefined || value === null) return 'Rp 0,00';
+
+      // Convert to number if it's a string
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+
+      // Format the number to Indonesian Rupiah format
+      return 'Rp ' + num.toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     },
   },
 };

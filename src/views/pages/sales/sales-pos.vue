@@ -13,19 +13,27 @@
             ><vue-feather type="shopping-cart" class="feather-16"></vue-feather></span
           >View Orders</a
         >
-<!--        <a-->
-<!--          href="javascript:void(0);"-->
-<!--          class="btn btn-primary"-->
-<!--          data-bs-toggle="modal"-->
-<!--          data-bs-target="#recents"-->
-<!--          ><span class="me-1 d-flex align-items-center"-->
-<!--            ><vue-feather type="refresh-ccw" class="feather-16"></vue-feather></span-->
-<!--          >Transaction</a-->
-<!--        >-->
+        <!-- Add a toggle button for product list on mobile -->
+        <a
+          href="javascript:void(0);"
+          class="btn btn-primary d-block d-lg-none ms-auto"
+          @click="toggleProductList"
+        >
+          <span class="d-flex align-items-center">
+            <vue-feather :type="productListCollapsed ? 'grid' : 'list'" class="feather-16 me-1"></vue-feather>
+            {{ productListCollapsed ? 'Show Products' : 'Show Cart' }}
+          </span>
+        </a>
       </div>
 
       <div class="row align-items-start pos-wrapper">
-        <div class="col-md-12 col-lg-8">
+        <!-- Products section - collapsible, hidden on mobile when collapsed -->
+        <div
+          :class="[
+            productListCollapsed ? 'd-none' : 'd-block',
+            'col-md-12 col-lg-8'
+          ]"
+        >
           <!-- Search and Reset Controls - Better positioned -->
           <div class="card table-list-card border-0 mb-3">
             <div class="card-body">
@@ -64,8 +72,13 @@
           </div>
 
           <div class="pos-categories tabs_wrapper">
-            <h5>Categories</h5>
-            <p>Select From Below Categories</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="mb-0">Categories</h5>
+                <p class="mb-0">Select From Below Categories</p>
+              </div>
+            </div>
+
             <ul class="tabs owl-carousel pos-category">
               <Carousel
                 :wrap-around="false"
@@ -111,7 +124,7 @@
                       :key="product.id"
                       class="col-sm-4 col-md-4 col-lg-4 col-xl-4 pe-2"
                     >
-                      <div class="product-info default-cover card" @click="addToCart(product)" style="cursor:pointer; position:relative;">
+                      <div class="product-info default-cover card" @click="openProductModal(product)" data-bs-toggle="modal" data-bs-target="#product-selection-modal" style="cursor:pointer; position:relative;">
                         <a href="javascript:void(0);" class="img-bg">
                           <img
                             v-if="product.image_url"
@@ -128,9 +141,9 @@
                         >
                           {{ getCartQty(product.id) }}
                         </span>
-                        <h7 class="product-name">
+                        <h6 class="product-name">
                           <a href="javascript:void(0);">{{ product.name }}</a>
-                        </h7>
+                        </h6>
                         <div class="d-flex align-items-center justify-content-between price">
                           <p>{{ formatIDR(product.price) }}</p>
                         </div>
@@ -142,28 +155,31 @@
             </div>
           </div>
         </div>
-        <div class="col-md-12 col-lg-4 ps-0">
+
+        <!-- Cart and order section - full width on mobile when products collapsed -->
+        <div
+          :class="[
+            productListCollapsed ? 'col-md-12 col-lg-12' : 'col-md-12 col-lg-4 ps-0'
+          ]"
+        >
           <aside class="product-order-list">
-<!--            <div class="head d-flex align-items-center justify-content-between w-100">-->
-<!--              <div class="">-->
-<!--                <h5>Order List</h5>-->
-<!--                <span>Transaction ID : #65565</span>-->
-<!--              </div>-->
-<!--              <div class="">-->
-<!--                <a-->
-<!--                  class="confirm-text"-->
-<!--                  @click="showConfirmation"-->
-<!--                  href="javascript:void(0);"-->
-<!--                  ><vue-feather-->
-<!--                    type="trash-2"-->
-<!--                    class="feather-16 text-danger"-->
-<!--                  ></vue-feather-->
-<!--                ></a>-->
-<!--                <a href="javascript:void(0);" class="text-default"-->
-<!--                  ><vue-feather type="more-vertical" class="feather-16"></vue-feather-->
-<!--                ></a>-->
-<!--              </div>-->
-<!--            </div>-->
+            <div v-if="isEditing" class="alert alert-light py-2 mb-0 ms-auto">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Editing Order:</strong> {{ editingTransaction.code }}
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-2"
+                    @click="cancelEditAndReset()"
+                >
+                    <span class="me-1 d-flex align-items-center">
+                      Cancel
+                    </span>
+                </button>
+              </div>
+            </div>
+
             <div class="customer-info block-section">
               <h6>Customer Information</h6>
               <div class="input-block d-flex align-items-center">
@@ -223,14 +239,14 @@
                       </div>
                     </div>
                     <div class="qty-item text-center">
-                      <a
-                        href="javascript:void(0);"
-                        class="dec d-flex justify-content-center align-items-center"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="minus"
-                        @click="decrementQty(item)"
-                      ><vue-feather type="minus-circle" class="feather-14"></vue-feather></a>
+<!--                      <a-->
+<!--                        href="javascript:void(0);"-->
+<!--                        class="dec d-flex justify-content-center align-items-center"-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        title="minus"-->
+<!--                        @click="decrementQty(item)"-->
+<!--                      ><vue-feather type="minus-circle" class="feather-14"></vue-feather></a>-->
                       <input
                         type="text"
                         class="form-control text-center"
@@ -238,23 +254,22 @@
                         :value="item.qty"
                         readonly
                       />
-                      <a
-                        href="javascript:void(0);"
-                        class="inc d-flex justify-content-center align-items-center"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="plus"
-                        @click="incrementQty(item)"
-                      ><vue-feather type="plus-circle" class="feather-14"></vue-feather></a>
+<!--                      <a-->
+<!--                        href="javascript:void(0);"-->
+<!--                        class="inc d-flex justify-content-center align-items-center"-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        title="plus"-->
+<!--                        @click="incrementQty(item)"-->
+<!--                      ><vue-feather type="plus-circle" class="feather-14"></vue-feather></a>-->
                     </div>
                     <div class="d-flex align-items-center action">
                       <a
                         class="btn-icon note-icon me-2"
                         href="javascript:void(0);"
-                        @click="toggleNoteInput(item)"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Add Note"
+                        @click="editProductModal(item)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#product-selection-modal"
                       >
                         <vue-feather type="edit-3" class="feather-14"></vue-feather>
                       </a>
@@ -268,26 +283,26 @@
                     </div>
                   </div>
                   <!-- Note input - appears when note button is clicked -->
-                  <div v-if="item.showNoteInput" class="mt-2" style="width:100%;">
-                    <div class="input-group input-group-sm">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Add your note here..."
-                        v-model="item.note"
-                        @keyup.enter="saveNote(item)"
-                        @blur="saveNote(item)"
-                        :ref="`noteInput_${item.id}`"
-                      />
-                      <button
-                        class="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        @click="saveNote(item)"
-                      >
-                        <vue-feather type="check" class="feather-12"></vue-feather>
-                      </button>
-                    </div>
-                  </div>
+<!--                  <div v-if="item.showNoteInput" class="mt-2" style="width:100%;">-->
+<!--                    <div class="input-group input-group-sm">-->
+<!--                      <input-->
+<!--                        type="text"-->
+<!--                        class="form-control"-->
+<!--                        placeholder="Add your note here..."-->
+<!--                        v-model="item.note"-->
+<!--                        @keyup.enter="saveNote(item)"-->
+<!--                        @blur="saveNote(item)"-->
+<!--                        :ref="`noteInput_${item.id}`"-->
+<!--                      />-->
+<!--                      <button-->
+<!--                        class="btn btn-outline-secondary btn-sm"-->
+<!--                        type="button"-->
+<!--                        @click="saveNote(item)"-->
+<!--                      >-->
+<!--                        <vue-feather type="check" class="feather-12"></vue-feather>-->
+<!--                      </button>-->
+<!--                    </div>-->
+<!--                  </div>-->
                 </div>
               </div>
             </div>
@@ -384,7 +399,106 @@
     data-bs-toggle="modal"
     data-bs-target="#payment-completed"
   ></button>
-  <pos-modal @next-order="resetOrder" ref="posModal"></pos-modal>
+  <pos-modal @next-order="resetOrder" @edit-order="loadOrderForEdit" ref="posModal"></pos-modal>
+
+  <!-- Product Selection Modal -->
+  <div class="modal fade" id="product-selection-modal" tabindex="-1" aria-labelledby="product-selection-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="product-selection-modal-label">Add to Cart</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedProduct" class="product-selection-content">
+            <!-- Product Information -->
+            <div class="d-flex align-items-center mb-3">
+              <div class="product-image me-3">
+                <img
+                  :src="selectedProduct.image_url"
+                  alt="Product"
+                  style="width:100px;height:100px;object-fit:contain;border-radius:5px;"
+                >
+              </div>
+              <div>
+                <h5>{{ selectedProduct.name }}</h5>
+                <p class="mb-0 text-primary">{{ formatIDR(selectedProduct.price) }}</p>
+              </div>
+            </div>
+
+            <!-- Quantity Selection -->
+            <div class="form-group mb-3">
+              <label class="form-label">Quantity</label>
+              <div class="input-group">
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  @click="decreaseModalQty"
+                  :disabled="modalQty <= 1"
+                >
+                  <vue-feather type="minus" class="feather-14"></vue-feather>
+                </button>
+                <input
+                  type="text"
+                  class="form-control text-center"
+                  :value="modalQty"
+                  @input="handleQtyInput"
+                  @blur="validateModalQty"
+                  min="1"
+                >
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  @click="increaseModalQty"
+                  :disabled="modalQty >= (selectedProduct.stock || 99999)"
+                >
+                  <vue-feather type="plus" class="feather-14"></vue-feather>
+                </button>
+              </div>
+            </div>
+
+            <!-- Note Input -->
+            <div class="form-group mb-3">
+              <label class="form-label">Note (Optional)</label>
+              <textarea
+                class="form-control"
+                v-model="modalNote"
+                rows="2"
+                placeholder="Add special instructions here..."
+              ></textarea>
+            </div>
+
+            <!-- Total Price -->
+            <div class="d-flex justify-content-between align-items-center border-top border-bottom py-2 mb-3">
+              <h6 class="mb-0">Total Price:</h6>
+              <h5 class="mb-0 text-primary">{{ formatIDR(selectedProduct.price * modalQty) }}</h5>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary m-0"
+            @click="addToCartFromModal"
+            data-bs-dismiss="modal"
+            :disabled="!selectedProduct || modalQty < 1"
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Product Selection Modal -->
 
   <!-- Note Modal -->
   <div class="modal fade" id="note-modal" tabindex="-1" aria-labelledby="note-modal" aria-hidden="true">
@@ -484,12 +598,25 @@ export default {
       customerName: "",
       selectedItem: null,
       noteText: "",
+      // New properties for product selection modal
+      selectedProduct: null,
+      modalQty: 1,
+      modalNote: "",
+      productSelectionModal: null,
+      // New property for product list collapse state
+      productListCollapsed: false,
+      // Store the resize handler to be able to remove it later
+      resizeHandler: null,
     }
   },
   computed: {
     ...mapGetters("category", ["categories"]),
     ...mapGetters("product", ["products"]),
-    ...mapGetters("transaction", ["transactionLoading"]),
+    ...mapGetters("transaction", [
+      "transactionLoading",
+      "editingTransaction",
+      "isEditing"
+    ]),
     subTotal() {
       return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     },
@@ -508,7 +635,25 @@ export default {
   methods: {
     ...mapActions("category", ["fetchCategories"]),
     ...mapActions("product", ["fetchProducts"]),
-    ...mapActions("transaction", ["createTransaction"]),
+    ...mapActions("transaction", [
+      "createTransaction",
+      "cancelEdit"
+    ]),
+
+    // Add method to toggle product list visibility
+    toggleProductList() {
+      this.productListCollapsed = !this.productListCollapsed;
+
+      // If on mobile and collapsing product list, scroll to cart
+      if (this.productListCollapsed && window.innerWidth < 992) {
+        this.$nextTick(() => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+    },
 
     // Add formatIDR function to format prices
     formatIDR(value) {
@@ -554,21 +699,99 @@ export default {
         per_page: 9999 // Load all products for the selected category
       });
     },
-    addToCart(product) {
-      const idx = this.cart.findIndex(item => item.id === product.id);
-      if (idx !== -1) {
-        // Already in cart, increment qty
-        if (this.cart[idx].qty < (product.stock || 99999)) {
-          this.cart[idx].qty += 1;
-        }
+    editProductModal(cart) {
+      this.selectedProduct = this.products.find(p => p.id === cart.id);
+      this.modalQty = cart.qty;
+      this.modalNote = cart.note || "";
+    },
+    // New method to open product selection modal
+    openProductModal(product) {
+      this.selectedProduct = product;
+
+      // Check if product already in cart and set initial qty
+      const existingItem = this.cart.find(item => item.id === product.id);
+      if (existingItem) {
+        this.modalQty = existingItem.qty;
+        this.modalNote = existingItem.note || "";
       } else {
+        this.modalQty = 1;
+        this.modalNote = "";
+      }
+    },
+    // Method to increase qty in the modal
+    increaseModalQty() {
+      if (this.selectedProduct && this.modalQty < (this.selectedProduct.stock || 99999)) {
+        this.modalQty++;
+      }
+    },
+    // Method to decrease qty in the modal
+    decreaseModalQty() {
+      if (this.modalQty > 1) {
+        this.modalQty--;
+      }
+    },
+    // New method to handle direct input changes
+    handleQtyInput(event) {
+      // Get the input value
+      const value = event.target.value;
+
+      // Only allow numbers
+      if (/^\d*$/.test(value)) {
+        // Update modalQty with the raw input (allow empty string temporarily)
+        this.modalQty = value === '' ? '' : parseInt(value, 10) || '';
+      }
+    },
+    // Method to validate manual input of quantity
+    validateModalQty() {
+      // If the input is empty or not a number, set to 1
+      if (this.modalQty === '' || isNaN(this.modalQty)) {
+        this.modalQty = 1;
+        return;
+      }
+
+      // Convert to number if it's a string
+      this.modalQty = parseInt(this.modalQty, 10);
+
+      // Ensure minimum qty is 1
+      if (this.modalQty < 1) {
+        this.modalQty = 1;
+      }
+
+      // Ensure maximum qty respects stock limit
+      const maxQty = this.selectedProduct?.stock || 99999;
+      if (this.modalQty > maxQty) {
+        this.modalQty = maxQty;
+      }
+    },
+    // Method to add product to cart from the modal
+    addToCartFromModal() {
+      // Ensure valid quantity before adding to cart
+      this.validateModalQty();
+
+      if (!this.selectedProduct) return;
+
+      const idx = this.cart.findIndex(item => item.id === this.selectedProduct.id);
+      if (idx !== -1) {
+        // Update existing item in cart
+        this.cart[idx].qty = this.modalQty;
+        this.cart[idx].note = this.modalNote;
+      } else {
+        // Add new item to cart
         this.cart.push({
-          ...product,
-          qty: 1,
-          note: "", // Add note field
-          showNoteInput: false, // Add field to control note input visibility
+          ...this.selectedProduct,
+          qty: this.modalQty,
+          note: this.modalNote,
+          showNoteInput: false,
         });
       }
+
+      // Reset modal data
+      this.selectedProduct = null;
+      this.modalQty = 1;
+      this.modalNote = "";
+    },
+    addToCart(product) {
+      this.openProductModal(product);
     },
     toggleNoteInput(item) {
       const idx = this.cart.findIndex(i => i.id === item.id);
@@ -633,20 +856,39 @@ export default {
       }
       this.fetchProducts(params);
     },
+    // Override resetOrder to also clear editing state
     resetOrder() {
       this.cart = [];
-      this.selectedPaymentMethod = this.paymentMethods[0]?.value || null;
+      this.selectedPaymentMethod = null;
       this.searchProductName = "";
       this.customerName = "";
-      // Optionally reset other fields if needed
+      // Reset modal data as well
+      this.selectedProduct = null;
+      this.modalQty = 1;
+      this.modalNote = "";
+      // Clear editing state
+      this.cancelEdit();
     },
-    resetProductFilter() {
-      this.selectedCategoryId = null;
-      this.searchProductName = "";
-      this.fetchProducts({ per_page: 9999 }); // Load all products when resetting filter
+    // Add a specific method to handle the cancel edit button click
+    cancelEditAndReset() {
+      // Clear the cart
+      this.cart = [];
+
+      // Reset form fields
+      this.customerName = "";
+      this.selectedPaymentMethod = null;
+
+      // Reset modal data
+      this.selectedProduct = null;
+      this.modalQty = 1;
+      this.modalNote = "";
+
+      // Clear the editing state in Vuex
+      this.cancelEdit();
     },
     async handlePayment(status) {
       if (this.cart.length === 0) return;
+
       const payload = {
         date: new Date().toISOString().slice(0, 19).replace("T", " "),
         type: "OFFLINE",
@@ -657,9 +899,10 @@ export default {
           product_id: item.id,
           qty: item.qty,
           price: item.price,
-          note: item.note || null, // Send note field for each transaction item
+          note: item.note || null,
         })),
       };
+
       const result = await this.createTransaction(payload);
       if (result && result.success) {
         this.resetOrder();
@@ -681,6 +924,51 @@ export default {
         this.$refs.posModal.fetchOrders('PENDING');
       }
     },
+    // New method to load an order for editing
+    loadOrderForEdit(transaction) {
+      // First, make sure the cart is empty
+      this.cart = [];
+
+      // Set the customer name
+      this.customerName = transaction.customer_name;
+
+      // Set the payment method if it exists in our available methods
+      if (transaction.payment_type) {
+        const paymentMethod = this.paymentMethods.find(m => m.value === transaction.payment_type);
+        if (paymentMethod) {
+          this.selectedPaymentMethod = paymentMethod.value;
+        }
+      }
+
+      // Load transaction items into cart
+      if (transaction.transaction_items && transaction.transaction_items.length > 0) {
+        transaction.transaction_items.forEach(item => {
+          // Find the product in our products list to get full details
+          const product = this.products.find(p => p.id === item.product_id);
+
+          if (product) {
+            // Add the product to cart with the quantity and note from the transaction
+            this.cart.push({
+              ...product,
+              qty: item.qty,
+              note: item.note || '',
+              showNoteInput: false
+            });
+          } else {
+            // If product not found in our current products list, add it with available info
+            this.cart.push({
+              id: item.product_id,
+              name: item.name,
+              price: item.price,
+              image_url: item.image_path,
+              qty: item.qty,
+              note: item.note || '',
+              showNoteInput: false
+            });
+          }
+        });
+      }
+    },
   },
   mounted() {
     this.fetchCategories({ per_page: 9999 }); // Load all categories on initial mount
@@ -688,8 +976,86 @@ export default {
 
     // Initialize payment method
     if (this.paymentMethods.length > 0) {
-      this.selectedPaymentMethod = this.paymentMethods[0].value;
+      this.selectedPaymentMethod = null;
     }
+
+    // Auto-collapse product list on small screens initially
+    if (window.innerWidth < 768) {
+      this.productListCollapsed = true;
+    }
+
+    // Define the resize handler function and store it in data so we can reference it later
+    this.resizeHandler = () => {
+      // Only auto-toggle on orientation change
+      if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+        this.productListCollapsed = true;
+      }
+    };
+
+    // Add resize listener to adjust collapse state on orientation change
+    window.addEventListener('resize', this.resizeHandler);
   },
+  beforeUnmount() {
+    // Properly remove the resize event listener by providing both the event name and the handler function
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+  }
 };
 </script>
+
+<style scoped>
+/* Add custom styles for the product selection modal */
+.product-selection-content {
+  max-width: 100%;
+}
+
+/* Remove spinner arrows from number input */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Improve the styling of the quantity input to make editing easier */
+.form-control.text-center {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  text-align: center;
+  cursor: text;
+}
+
+/* Add transition for smoother column resizing */
+.col-md-12, .col-lg-8, .col-lg-4, .col-lg-12, .col-lg-0 {
+  transition: all 0.3s ease;
+}
+
+/* Ensure the cart takes full width when product list is collapsed */
+.product-order-list {
+  height: 100%;
+}
+
+/* Make the collapse button stand out a bit more on hover */
+.btn-outline-secondary:hover .feather-14 {
+  stroke-width: 2.5;
+}
+
+/* Add styles for mobile optimization */
+@media (max-width: 991px) {
+  .btn-row {
+    justify-content: space-between;
+  }
+
+  .product-order-list {
+    min-height: calc(100vh - 150px);
+  }
+
+  /* Add transition for smoother toggle */
+  .col-md-12 {
+    transition: all 0.3s ease;
+  }
+}
+</style>

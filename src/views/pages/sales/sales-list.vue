@@ -12,47 +12,48 @@
           </div>
         </div>
         <ul class="table-top-head">
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"
-              ><img src="@/assets/img/icons/pdf.svg" alt="img"
-            /></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"
-              ><img src="@/assets/img/icons/excel.svg" alt="img"
-            /></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"
-              ><vue-feather type="printer" class="printer"></vue-feather
-            ></a>
-          </li>
-          <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"
-              ><vue-feather type="rotate-ccw" class="rotate-ccw"></vue-feather
-            ></a>
-          </li>
+<!--          <li>-->
+<!--            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"-->
+<!--              ><img src="@/assets/img/icons/pdf.svg" alt="img"-->
+<!--            /></a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"-->
+<!--              ><img src="@/assets/img/icons/excel.svg" alt="img"-->
+<!--            /></a>-->
+<!--          </li>-->
+<!--          <li>-->
+<!--            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"-->
+<!--              ><vue-feather type="printer" class="printer"></vue-feather-->
+<!--            ></a>-->
+<!--          </li>-->
           <li>
             <a
-              ref="collapseHeader"
               data-bs-toggle="tooltip"
               data-bs-placement="top"
-              title="Collapse"
-              @click="toggleCollapse"
-            >
-              <i data-feather="chevron-up" class="feather-chevron-up"></i>
-            </a>
+              title="Refresh"
+              @click="refreshTransactions"
+            ><vue-feather type="rotate-ccw" class="rotate-ccw"></vue-feather></a>
           </li>
+<!--          <li>-->
+<!--            <a-->
+<!--              ref="collapseHeader"-->
+<!--              data-bs-toggle="tooltip"-->
+<!--              data-bs-placement="top"-->
+<!--              title="Collapse"-->
+<!--              @click="toggleCollapse"-->
+<!--            >-->
+<!--              <i data-feather="chevron-up" class="feather-chevron-up"></i>-->
+<!--            </a>-->
+<!--          </li>-->
         </ul>
-        <div class="page-btn">
-          <a
-            href="javascript:void(0);"
-            class="btn btn-added"
-            data-bs-toggle="modal"
-            data-bs-target="#add-sales-new"
-            ><vue-feather type="plus-circle" class="me-2"></vue-feather> Add New Sales</a
-          >
-        </div>
+<!--        <div class="page-btn">-->
+<!--          <a-->
+<!--            href="javascript:void(0);"-->
+<!--            class="btn btn-added"-->
+<!--            @click="goToPos"-->
+<!--          ><vue-feather type="plus-circle" class="me-2"></vue-feather> Add New Sales</a>-->
+<!--        </div>-->
       </div>
 
       <!-- /product list -->
@@ -61,10 +62,16 @@
           <div class="table-top">
             <div class="search-set">
               <div class="search-input">
-                <input type="text" placeholder="Search" class="dark-input" />
-                <a href="" class="btn btn-searchset"
-                  ><i data-feather="search" class="feather-search"></i
-                ></a>
+                <input
+                  type="text"
+                  placeholder="Search"
+                  class="dark-input"
+                  v-model="searchQuery"
+                  @keyup.enter="applySearch"
+                />
+                <a href="javascript:void(0);" class="btn btn-searchset" @click="applySearch">
+                  <i data-feather="search" class="feather-search"></i>
+                </a>
               </div>
             </div>
             <div class="search-path">
@@ -81,8 +88,12 @@
               </div>
             </div>
             <div class="form-sort">
-              <vue-feather type="sliders" class="info-img"></vue-feather>
-              <custom-select :options="Sortdate" id="sortdate" placeholder="Sort by Date" />
+              <input
+                type="date"
+                class="form-control"
+                v-model="dateFilter"
+                @change="applyDateFilter"
+              />
             </div>
           </div>
           <!-- /Filter -->
@@ -95,138 +106,278 @@
               <div class="row">
                 <div class="col-lg-3 col-sm-6 col-12">
                   <div class="input-blocks">
-                    <i data-feather="user" class="info-img"></i>
-                    <custom-select
-                      :options="Macbook"
-                      id="macbook"
-                      placeholder="Choose Customer Name"
-                    />
-                  </div>
-                </div>
-                <div class="col-lg-2 col-sm-6 col-12">
-                  <div class="input-blocks">
-                    <i data-feather="stop-circle" class="info-img"></i>
-                    <custom-select
-                      :options="Fruits"
-                      id="fruits"
-                      placeholder="Choose Status"
-                    />
-                  </div>
-                </div>
-                <div class="col-lg-2 col-sm-6 col-12">
-                  <div class="input-blocks">
-                    <i data-feather="file-text" class="info-img"></i>
+                    <label>Transaction Code</label>
                     <input
                       type="text"
-                      placeholder="Enter Reference"
+                      placeholder="Transaction Code"
                       class="form-control"
+                      v-model="filterValues.code"
                     />
                   </div>
                 </div>
                 <div class="col-lg-3 col-sm-6 col-12">
                   <div class="input-blocks">
-                    <i data-feather="stop-circle" class="info-img"></i>
-                    <custom-select
-                      :options="Computers"
-                      id="computer"
-                      placeholder="Choose Payment Status"
+                    <label>Customer Name</label>
+                    <input
+                      type="text"
+                      placeholder="Customer Name"
+                      class="form-control"
+                      v-model="filterValues.customer_name"
                     />
                   </div>
                 </div>
-                <div class="col-lg-2 col-sm-6 col-12">
+                <div class="col-lg-3 col-sm-6 col-12">
                   <div class="input-blocks">
-                    <a class="btn btn-filters ms-auto">
-                      <i data-feather="search" class="feather-search"></i> Search
-                    </a>
+                    <label>Type</label>
+                    <select class="form-select" v-model="filterValues.type">
+                      <option value="">All Types</option>
+                      <option value="ONLINE">Online</option>
+                      <option value="OFFLINE">Offline</option>
+                    </select>
                   </div>
                 </div>
+                <div class="col-lg-3 col-sm-6 col-12">
+                  <div class="input-blocks">
+                    <label>Payment Type</label>
+                    <select class="form-select" v-model="filterValues.payment_type">
+                      <option value="">All Payment Types</option>
+                      <option value="CASH">Cash</option>
+                      <option value="QRIS">QRIS</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 col-12">
+                  <div class="input-blocks">
+                    <label>Status</label>
+                    <select class="form-select" v-model="filterValues.status">
+                      <option value="">All Status</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="PAID">Paid</option>
+                      <option value="CANCELED">Canceled</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-9 col-sm-12 col-12">
+                  <div class="input-blocks">
+                    <label>Date Range</label>
+                    <div class="d-flex">
+                      <input
+                        type="date"
+                        placeholder="Start Date"
+                        class="form-control me-2"
+                        v-model="filterValues.start_date"
+                      />
+                      <input
+                        type="date"
+                        placeholder="End Date"
+                        class="form-control"
+                        v-model="filterValues.from_date"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-sm-12 col-12">
+                  <div class="input-blocks">
+                    <label>Total Range</label>
+                    <div class="d-flex">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        class="form-control me-2"
+                        v-model="filterValues.total_min"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        class="form-control"
+                        v-model="filterValues.total_max"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-sm-12 col-12">
+                  <div class="input-blocks">
+                    <label>Subtotal Range</label>
+                    <div class="d-flex">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        class="form-control me-2"
+                        v-model="filterValues.sub_total_min"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        class="form-control"
+                        v-model="filterValues.sub_total_max"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-sm-12 col-12">
+                  <div class="input-blocks">
+                    <label>Items Range</label>
+                    <div class="d-flex">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        class="form-control me-2"
+                        v-model="filterValues.total_item_min"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        class="form-control"
+                        v-model="filterValues.total_item_max"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-blocks d-flex">
+                <button class="btn btn-filters ms-auto me-2" @click="applyFilters">
+                  <i data-feather="search" class="feather-search"></i> Apply
+                </button>
+                <button class="btn btn-outline-danger" @click="resetFilters">
+                  <i data-feather="x" class="feather-x"></i> Reset
+                </button>
               </div>
             </div>
           </div>
           <!-- /Filter -->
-          <div class="table-responsive">
-            <a-table :columns="columns" :data-source="data" :row-selection="{}">
-              <template #bodyCell="{ column, record }">
-                <template v-if="column.key === 'Status'">
-                  <div>
-                    <span :class="record.Status_class">{{ record.Status }}</span>
-                  </div>
-                </template>
-                <template v-else-if="column.key === 'Payment_Status'">
-                  <div>
-                    <span :class="record.Payment_Class">{{ record.Payment_Status }}</span>
-                  </div>
-                </template>
-                <template v-else-if="column.key === 'action'">
-                  <div class="text-center">
-                    <a
-                      class="action-set"
-                      href="javascript:void(0);"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="true"
-                    >
-                      <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-                    </a>
-                    <ul class="dropdown-menu sales-list-icon">
-                      <li>
-                        <a
-                          href="javascript:void(0);"
-                          class="dropdown-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#sales-details-new"
-                          ><vue-feather type="eye" class="info-img"></vue-feather>Sale
-                          Detail</a
-                        >
-                      </li>
-                      <li>
-                        <a
-                          href="javascript:void(0);"
-                          class="dropdown-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#edit-sales-new"
-                          ><vue-feather type="edit" class="info-img"></vue-feather>Edit
-                          Sale</a
-                        >
-                      </li>
-                      <li>
-                        <a
-                          href="javascript:void(0);"
-                          class="dropdown-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#showpayment"
-                          ><vue-feather type="dollar-sign" class="info-img"></vue-feather
-                          >Show Payments</a
-                        >
-                      </li>
-                      <li>
-                        <a
-                          href="javascript:void(0);"
-                          class="dropdown-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#createpayment"
-                          ><vue-feather type="plus-circle" class="info-img"></vue-feather
-                          >Create Payment</a
-                        >
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);" class="dropdown-item"
-                          ><vue-feather type="download" class="info-img"></vue-feather
-                          >Download pdf</a
-                        >
-                      </li>
-                      <li>
-                        <a
-                          href="javascript:void(0);"
-                          class="dropdown-item confirm-text mb-0"
-                          ><vue-feather type="trash-2" class="info-img"></vue-feather
-                          >Delete Sale</a
-                        >
-                      </li>
-                    </ul>
-                  </div>
-                </template>
-              </template>
-            </a-table>
+
+          <!-- Loading state -->
+          <div v-if="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading transactions...</p>
+          </div>
+
+          <!-- Error state -->
+          <div v-else-if="error" class="alert alert-danger">
+            {{ error }}
+          </div>
+
+          <!-- Empty state -->
+          <div v-else-if="transactions.length === 0" class="text-center py-5">
+            <vue-feather type="inbox" size="48" class="text-muted mb-3"></vue-feather>
+            <p>No transactions found</p>
+          </div>
+
+          <!-- Data table -->
+          <div v-else class="table-responsive">
+            <table class="table datanew table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Code</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Items</th>
+                  <th>Type</th>
+                  <th>Payment</th>
+                  <th>Sub Total</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="transaction in transactions" :key="transaction.id">
+                  <td>{{ transaction.id }}</td>
+                  <td>{{ transaction.code }}</td>
+                  <td>{{ transaction.customer_name }}</td>
+                  <td>{{ formatDate(transaction.created_at) }}</td>
+                  <td>{{ transaction.total_item }}</td>
+                  <td>
+                    <span :class="getTypeClass(transaction.type)">{{ transaction.type }}</span>
+                  </td>
+                  <td>{{ transaction.payment_type }}</td>
+                  <td>{{ formatCurrency(transaction.sub_total) }}</td>
+                  <td>{{ formatCurrency(transaction.total) }}</td>
+                  <td>
+                    <span :class="getStatusClass(transaction.status)">{{ transaction.status }}</span>
+                  </td>
+                  <td class="text-center">
+                    <div class="action-btns">
+                      <a
+                        href="javascript:void(0);"
+                        class="btn btn-sm btn-info me-1"
+                        @click="viewTransaction(transaction.id)"
+                        title="View Details"
+                        data-bs-toggle="modal"
+                        data-bs-target="#sales-details-new"
+                      >
+                        <vue-feather type="eye" class="feather-16"></vue-feather>
+                      </a>
+<!--                      <a-->
+<!--                        v-if="transaction.status === 'PENDING'"-->
+<!--                        href="javascript:void(0);"-->
+<!--                        class="btn btn-sm btn-primary me-1"-->
+<!--                        @click="editTransaction(transaction.id)"-->
+<!--                        title="Edit"-->
+<!--                      >-->
+<!--                        <vue-feather type="edit" class="feather-16"></vue-feather>-->
+<!--                      </a>-->
+<!--                      <a-->
+<!--                        v-if="transaction.status === 'PENDING'"-->
+<!--                        href="javascript:void(0);"-->
+<!--                        class="btn btn-sm btn-danger"-->
+<!--                        @click="confirmDelete(transaction.id)"-->
+<!--                        title="Delete"-->
+<!--                      >-->
+<!--                        <vue-feather type="trash-2" class="feather-16"></vue-feather>-->
+<!--                      </a>-->
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div v-if="pagination" class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+              <div class="d-flex align-items-center mb-2">
+                <span class="me-2">Show</span>
+                <select class="form-select form-select-sm" v-model="perPage" @change="onPerPageChange" style="width: auto;">
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <span class="ms-2">entries</span>
+              </div>
+
+              <div class="pagination-info mb-2">
+                <span>Showing {{ pagination.from || 0 }} to {{ pagination.to || 0 }} of {{ pagination.total }} entries</span>
+              </div>
+
+              <ul class="pagination mb-2" v-if="pagination.last_page > 1">
+                <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
+                  <a class="page-link" href="javascript:void(0);" @click="onPageChange(1)">&laquo;</a>
+                </li>
+                <li class="page-item" :class="{ disabled: pagination.current_page === 1 }">
+                  <a class="page-link" href="javascript:void(0);" @click="onPageChange(pagination.current_page - 1)">&lt;</a>
+                </li>
+
+                <li
+                  v-for="page in visiblePageNumbers"
+                  :key="page"
+                  class="page-item"
+                  :class="{ active: page === pagination.current_page }"
+                >
+                  <a class="page-link" href="javascript:void(0);" @click="onPageChange(page)">{{ page }}</a>
+                </li>
+
+                <li class="page-item" :class="{ disabled: pagination.current_page === pagination.last_page }">
+                  <a class="page-link" href="javascript:void(0);" @click="onPageChange(pagination.current_page + 1)">&gt;</a>
+                </li>
+                <li class="page-item" :class="{ disabled: pagination.current_page === pagination.last_page }">
+                  <a class="page-link" href="javascript:void(0);" @click="onPageChange(pagination.last_page)">&raquo;</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -238,263 +389,82 @@
 </template>
 
 <script>
-const columns = [
-  {
-    sorter: true,
-  },
-  {
-    title: "Customer Name",
-    dataIndex: "Customer_Name",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Customer_Name.toLowerCase();
-        b = b.Customer_Name.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Reference",
-    dataIndex: "Reference",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Reference.toLowerCase();
-        b = b.Reference.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Date",
-    dataIndex: "Date",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Date.toLowerCase();
-        b = b.Date.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Status",
-    dataIndex: "Status",
-    key: "Status",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Status.toLowerCase();
-        b = b.Status.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Grand Total",
-    dataIndex: "Grand_Total",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Grand_Total.toLowerCase();
-        b = b.Grand_Total.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Paid",
-    dataIndex: "Paid",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Paid.toLowerCase();
-        b = b.Paid.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Due",
-    dataIndex: "Due",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Due.toLowerCase();
-        b = b.Due.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Payment Status",
-    dataIndex: "Payment_Status",
-    key: "Payment_Status",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Payment_Status.toLowerCase();
-        b = b.Payment_Status.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Biller",
-    dataIndex: "Biller",
-    sorter: {
-      compare: (a, b) => {
-        a = a.Biller.toLowerCase();
-        b = b.Biller.toLowerCase();
-        return a > b ? -1 : b > a ? 1 : 0;
-      },
-    },
-  },
-  {
-    title: "Action",
-    key: "action",
-    sorter: true,
-  },
-];
+import { mapActions, mapGetters } from 'vuex';
+import Swal from 'sweetalert2';
 
-const data = [
-  {
-    Customer_Name: "Thomas",
-    Reference: "SL0101",
-    Date: "19 Jan 2023",
-    Status: "Completed",
-    Status_class: "badge badge-bgsuccess",
-    Grand_Total: "$550",
-    Paid: "$550",
-    Due: "$0.00",
-    Payment_Status: "Paid",
-    Payment_Class: "badge badge-linesuccess",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Rose",
-    Reference: "SL0102",
-    Date: "26 Jan 2023",
-    Status: "Completed",
-    Status_class: "badge badge-bgsuccess",
-    Grand_Total: "$250",
-    Paid: "$250",
-    Due: "$0.00",
-    Payment_Status: "Paid",
-    Payment_Class: "badge badge-linesuccess",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Benjamin",
-    Reference: "SL0103",
-    Date: "08 Feb 2023",
-    Status: "Completed",
-    Status_class: "badge badge-bgsuccess",
-    Grand_Total: "$570",
-    Paid: "$570",
-    Due: "$0.00",
-    Payment_Status: "Paid",
-    Payment_Class: "badge badge-linesuccess",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Lilly",
-    Reference: "SL0104",
-    Date: "12 Feb 2023",
-    Status: "Pending",
-    Status_class: "badge badge-bgdanger",
-    Grand_Total: "$300",
-    Paid: "$0.00",
-    Due: "$300",
-    Payment_Status: "Due",
-    Payment_Class: "badge badge-linedanger",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Freda",
-    Reference: "SL0105",
-    Date: "17 Mar 2023",
-    Status: "Pending",
-    Status_class: "badge badge-bgdanger",
-    Grand_Total: "$700",
-    Paid: "$0.00",
-    Due: "$700",
-    Payment_Status: "Due",
-    Payment_Class: "badge badge-linedanger",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Alwin",
-    Reference: "SL0106",
-    Date: "24 Mar 2023",
-    Status: "Completed",
-    Status_class: "badge badge-bgsuccess",
-    Grand_Total: "$400",
-    Paid: "$400",
-    Due: "$0.00",
-    Payment_Status: "Paid",
-    Payment_Class: "badge badge-linesuccess",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Maybelle",
-    Reference: "SL0107",
-    Date: "06 Apr 2023",
-    Status: "Pending",
-    Status_class: "badge badge-bgdanger",
-    Grand_Total: "$120",
-    Paid: "$0.00",
-    Due: "$120",
-    Payment_Status: "Due",
-    Payment_Class: "badge badge-linedanger",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Ellen",
-    Reference: "SL0108",
-    Date: "16 Apr 2023",
-    Status: "Completed",
-    Status_class: "badge badge-bgsuccess",
-    Grand_Total: "$830",
-    Paid: "$830",
-    Due: "$0.00",
-    Payment_Status: "Paid",
-    Payment_Class: "badge badge-linesuccess",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Kaitlin",
-    Reference: "SL0109",
-    Date: "04 May 2023",
-    Status: "Pending",
-    Status_class: "badge badge-bgdanger",
-    Grand_Total: "$800",
-    Paid: "$0.00",
-    Due: "$800",
-    Payment_Status: "Due",
-    Payment_Class: "badge badge-linedanger",
-    Biller: "Admin",
-  },
-  {
-    Customer_Name: "Grace",
-    Reference: "SL0110",
-    Date: "29 May 2023",
-    Status: "Completed",
-    Status_class: "badge badge-bgsuccess",
-    Grand_Total: "$460",
-    Paid: "$460",
-    Due: "$0.00",
-    Payment_Status: "Paid",
-    Payment_Class: "badge badge-linesuccess",
-    Biller: "Admin",
-  },
-];
 export default {
   data() {
     return {
       filter: false,
-      Sortdate: ["Sort by Date", "07 09 23", "21 09 23"],
-      Macbook: ["Choose Customer Name", "Macbook pro", "Orange"],
-      Fruits: ["Choose Status", "Computers", "Fruits"],
-      Computers: ["Choose Payment Status", "Computers", "Fruits"],
-      columns,
-      data,
+      perPage: 10,
+      searchQuery: '',
+      dateFilter: '',
+      filterValues: {
+        code: '',
+        customer_name: '',
+        date: '',
+        start_date: '',
+        from_date: '',
+        total_min: '',
+        total_max: '',
+        sub_total_min: '',
+        sub_total_max: '',
+        total_item_min: '',
+        total_item_max: '',
+        type: '',
+        payment_type: '',
+        status: ''
+      }
     };
   },
+  computed: {
+    ...mapGetters('sales', [
+      'transactions',
+      'pagination',
+      'isLoading',
+      'error'
+    ]),
+
+    // Calculate visible page numbers for pagination
+    visiblePageNumbers() {
+      if (!this.pagination) return [];
+
+      const current = this.pagination.current_page;
+      const last = this.pagination.last_page;
+
+      // Show up to 5 page numbers
+      if (last <= 5) {
+        // If total pages are 5 or less, show all
+        return Array.from({ length: last }, (_, i) => i + 1);
+      } else {
+        // Always include first, last, current, and 1-2 surrounding pages
+        let pages = [1, last, current];
+
+        // Add one page before and after current if possible
+        if (current > 1) pages.push(current - 1);
+        if (current < last) pages.push(current + 1);
+
+        // Add second page if needed
+        if (current > 3) pages.push(2);
+
+        // Add second-to-last page if needed
+        if (current < last - 2) pages.push(last - 1);
+
+        // Sort the page numbers and remove duplicates
+        return [...new Set(pages)].sort((a, b) => a - b);
+      }
+    }
+  },
   methods: {
+    ...mapActions('sales', [
+      'fetchTransactions',
+      'updateFilters',
+      'resetFilters',
+      'changePerPage',
+      'changePage',
+      'getTransaction'
+    ]),
+
     toggleCollapse() {
       const collapseHeader = this.$refs.collapseHeader;
 
@@ -503,6 +473,185 @@ export default {
         document.body.classList.toggle("header-collapse");
       }
     },
+
+    // Navigate to POS page
+    goToPos() {
+      this.$router.push('/sales/pos');
+    },
+
+    // Refresh transaction list
+    refreshTransactions() {
+      this.fetchTransactions({ page: 1, perPage: this.perPage });
+    },
+
+    // Apply search filter
+    applySearch() {
+      this.updateFilters({ search: this.searchQuery });
+    },
+
+    // Apply date filter
+    applyDateFilter() {
+      if (this.dateFilter) {
+        this.updateFilters({ date: this.dateFilter });
+      } else {
+        this.updateFilters({ date: '' });
+      }
+    },
+
+    // Apply all filters
+    applyFilters() {
+      this.updateFilters(this.filterValues);
+    },
+
+    // Reset all filters
+    resetAllFilters() {
+      this.searchQuery = '';
+      this.dateFilter = '';
+      this.resetFilters();
+      this.filterValues = {
+        code: '',
+        customer_name: '',
+        date: '',
+        start_date: '',
+        from_date: '',
+        total_min: '',
+        total_max: '',
+        sub_total_min: '',
+        sub_total_max: '',
+        total_item_min: '',
+        total_item_max: '',
+        type: '',
+        payment_type: '',
+        status: ''
+      };
+    },
+
+    // Handle per page change
+    onPerPageChange() {
+      this.changePerPage(this.perPage);
+    },
+
+    // Handle page change
+    onPageChange(page) {
+      if (page > 0 && page <= this.pagination.last_page && page !== this.pagination.current_page) {
+        this.changePage(page);
+      }
+    },
+
+    // View transaction details
+    viewTransaction(id) {
+      // You can implement a modal to display transaction details
+      // or navigate to a transaction details page
+      this.getTransaction(id)
+        .then(() => {
+          // Open details modal
+          console.log('View transaction details for ID:', id);
+        });
+    },
+
+    // Confirm delete
+    confirmDelete(id) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Implement delete functionality
+          console.log('Delete transaction with ID:', id);
+
+          // Show success message
+          Swal.fire(
+            'Deleted!',
+            'The transaction has been deleted.',
+            'success'
+          );
+
+          // Refresh the transaction list
+          this.refreshTransactions();
+        }
+      });
+    },
+
+    // Format date for display
+    formatDate(dateStr) {
+      if (!dateStr) return '-';
+
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+
+    // Format currency
+    formatCurrency(value) {
+      if (value === undefined || value === null) return 'Rp 0';
+
+      // Convert to number if it's a string
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+
+      // Format the number to Indonesian Rupiah format
+      return 'Rp ' + num.toLocaleString('id-ID');
+    },
+
+    // Get CSS class for status badge
+    getStatusClass(status) {
+      switch (status) {
+        case 'PAID':
+          return 'badge bg-success';
+        case 'PENDING':
+          return 'badge bg-warning';
+        case 'CANCELED':
+          return 'badge bg-danger';
+        default:
+          return 'badge bg-secondary';
+      }
+    },
+
+    // Get CSS class for type badge
+    getTypeClass(type) {
+      switch (type) {
+        case 'ONLINE':
+          return 'badge bg-info';
+        case 'OFFLINE':
+          return 'badge bg-primary';
+        default:
+          return 'badge bg-secondary';
+      }
+    }
   },
+  mounted() {
+    // Fetch transactions when component is mounted
+    this.fetchTransactions({ perPage: this.perPage });
+  }
 };
 </script>
+
+<style scoped>
+.badge {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.action-btns {
+  display: flex;
+  justify-content: center;
+}
+
+.action-btns .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.feather-16 {
+  width: 16px;
+  height: 16px;
+}
+</style>

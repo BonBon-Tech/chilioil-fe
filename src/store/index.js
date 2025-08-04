@@ -7,9 +7,10 @@ import product from './product';
 import storeModule from './store';
 import expenseCategory from './expenses-category';
 import expense from './expense';
-import designation from './designation'; // <-- add this line
+import designation from './designation';
 import employee from './employee';
 import transaction from './transaction';
+import sales from './sales'; // Import the new sales module
 
 const store = createStore({
     modules: {
@@ -21,9 +22,10 @@ const store = createStore({
         store: storeModule,
         expenseCategory,
         expense,
-        designation, // <-- add this line
+        designation,
         employee,
-        transaction, // <-- add this line
+        transaction,
+        sales // Add the new sales module
     },
 });
 
