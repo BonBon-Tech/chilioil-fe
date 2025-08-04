@@ -470,56 +470,56 @@
                       </div>
                     </div>
 
-                    <div class="btn-row d-sm-flex align-items-center mt-3">
-                      <button
-                        type="button"
-                        class="btn btn-primary"
-                        @click="toggleOrderDetails(order.id)"
-                      >
-                        <span v-if="expandedOrderId === order.id">Hide Details</span>
-                        <span v-else>View Details</span>
-                      </button>
+                    <div class="btn-row d-sm-flex align-items-center justify-content-between mt-3">
+                      <div>
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          @click="toggleOrderDetails(order.id)"
+                        >
+                          <span v-if="expandedOrderId === order.id">Hide Details</span>
+                          <span v-else>View Details</span>
+                        </button>
 
-                      <button
-                        type="button"
-                        class="btn btn-warning me-2"
-                        @click="editOrder(order)"
-                        data-bs-dismiss="modal"
-                      >
-                        <vue-feather type="edit" class="feather-14 me-1"></vue-feather>
-                        Edit
-                      </button>
+                        <button
+                            href="javascript:void(0);"
+                            class="btn btn-warning"
+                            @click="printPaidOrder(order)"
+                            data-bs-toggle="modal"
+                            data-bs-target="#print-receipt"
+                        >
+                          <vue-feather type="printer" class="me-1"></vue-feather>
+                        </button>
+                      </div>
 
-                      <button
-                        type="button"
-                        class="btn btn-success me-2"
-                        @click="updateOrderStatus(order.id, 'PAID')"
-                        :disabled="orderActionLoading"
-                      >
-                        <vue-feather type="check-circle" class="feather-14 me-1"></vue-feather>
-                        Payment
-                      </button>
+                      <div>
+                        <button
+                          type="button"
+                          class="btn btn-warning me-2"
+                          @click="editOrder(order)"
+                          data-bs-dismiss="modal"
+                        >
+                          <vue-feather type="edit" class="feather-14 me-1"></vue-feather>
+                        </button>
 
-                      <button
-                        type="button"
-                        class="btn btn-danger"
-                        @click="confirmCancelOrder(order.id)"
-                        :disabled="orderActionLoading"
-                      >
-                        <vue-feather type="x-circle" class="feather-14 me-1"></vue-feather>
-                        Cancel
-                      </button>
+                        <button
+                          type="button"
+                          class="btn btn-success me-2"
+                          @click="updateOrderStatus(order.id, 'PAID')"
+                          :disabled="orderActionLoading"
+                        >
+                          <vue-feather type="check-circle" class="feather-14 me-1"></vue-feather>
+                        </button>
 
-                      <button
-                          href="javascript:void(0);"
-                          class="btn btn-success btn-icon flex-fill"
-                          @click="printPaidOrder(order)"
-                          data-bs-toggle="modal"
-                          data-bs-target="#print-receipt"
-                      >
-                        <vue-feather type="printer" class="feather-14 me-1"></vue-feather>
-                        Print Receipt
-                      </button>
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          @click="confirmCancelOrder(order.id)"
+                          :disabled="orderActionLoading"
+                        >
+                          <vue-feather type="x-circle" class="feather-14 me-1"></vue-feather>
+                        </button>
+                      </div>
                     </div>
 
                     <!-- Expanded transaction items section -->
@@ -636,10 +636,10 @@
                       </div>
                     </div>
 
-                    <div class="btn-row d-sm-flex align-items-center justify-content-between mt-3">
+                    <div class="btn-row d-sm-flex align-items-center mt-3">
                       <a
                           href="javascript:void(0);"
-                          class="btn btn-primary btn-icon flex-fill"
+                          class="btn btn-primary"
                           @click="toggleOrderDetails(order.id)"
                       >
                         <span v-if="expandedOrderId === order.id">Hide Details</span>
@@ -647,13 +647,12 @@
                       </a>
                       <button
                           href="javascript:void(0);"
-                          class="btn btn-success btn-icon flex-fill"
+                          class="btn btn-warning"
                           @click="printPaidOrder(order)"
                           data-bs-toggle="modal"
                           data-bs-target="#print-receipt"
                       >
-                        <vue-feather type="printer" class="feather-14 me-1"></vue-feather>
-                        Print Receipt
+                        <vue-feather type="printer" class="me-1"></vue-feather>
                       </button>
                     </div>
 
