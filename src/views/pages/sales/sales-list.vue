@@ -422,7 +422,8 @@ export default {
       'transactions',
       'pagination',
       'isLoading',
-      'error'
+      'error',
+      'filters'
     ]),
 
     // Calculate visible page numbers for pagination
@@ -453,6 +454,17 @@ export default {
         // Sort the page numbers and remove duplicates
         return [...new Set(pages)].sort((a, b) => a - b);
       }
+    }
+  },
+  watch: {
+    // Watch for changes in store filters and update local form values
+    filters: {
+      handler(newFilters) {
+        this.searchQuery = newFilters.search || '';
+        this.dateFilter = newFilters.date || '';
+        this.filterValues = { ...newFilters };
+      },
+      deep: true
     }
   },
   methods: {
@@ -631,6 +643,15 @@ export default {
   mounted() {
     // Fetch transactions when component is mounted
     this.fetchTransactions({ perPage: this.perPage });
+
+    // Synchronize local form state with store state
+    this.searchQuery = this.filters.search || '';
+    this.dateFilter = this.filters.date || '';
+    this.filterValues = { ...this.filters };
+  },
+  beforeUnmount() {
+    // Clear filters when navigating away from the page
+    this.resetAllFilters();
   }
 };
 </script>

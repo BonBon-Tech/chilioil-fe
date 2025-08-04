@@ -49,6 +49,7 @@ export default {
           state.transaction = transaction;
         },
         resetFilters(state) {
+            // Ensure we're completely resetting all filter values to empty strings
             state.filters = {
                 search: '',
                 code: '',
@@ -167,4 +168,3 @@ export default {
         filters: state => state.filters
     }
 };
-
