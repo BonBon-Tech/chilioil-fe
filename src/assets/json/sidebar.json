@@ -50,6 +50,14 @@
     "separateRoute": false,
     "menu": [
       {
+        "menuValue": "Sales",
+        "icon": "shopping-cart",
+        "route": "/sales/sales-list",
+        "active_link" : "/sales/sales-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
         "menuValue": "POS",
         "icon": "hard-drive",
         "route": "/sales/pos",

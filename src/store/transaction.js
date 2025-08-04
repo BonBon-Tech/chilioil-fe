@@ -79,14 +79,14 @@ export default {
             }
         },
 
-        async fetchTransactions({ commit, dispatch }, { status, fromDate, toDate, searchQuery }) {
+        async fetchTransactions({ commit, dispatch }, { status, fromDate, toDate, searchQuery, perPage = 9999 }) {
             commit('clearError');
             commit('setLoading', true);
             dispatch('loading/showLoading', null, { root: true });
 
             try {
                 // Build the URL with query parameters
-                let url = `/api/v1/transactions?status=${status}`;
+                let url = `/api/v1/transactions?perPage=${perPage}&status=${status}`;
 
                 // Append date filters if provided
                 if (fromDate) {

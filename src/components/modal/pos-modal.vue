@@ -488,7 +488,7 @@
                             data-bs-toggle="modal"
                             data-bs-target="#print-receipt"
                         >
-                          <vue-feather type="printer" class="me-1"></vue-feather>
+                          <vue-feather type="printer"></vue-feather>
                         </button>
                       </div>
 
@@ -499,7 +499,7 @@
                           @click="editOrder(order)"
                           data-bs-dismiss="modal"
                         >
-                          <vue-feather type="edit" class="feather-14 me-1"></vue-feather>
+                          <vue-feather type="edit"></vue-feather>
                         </button>
 
                         <button
@@ -508,7 +508,7 @@
                           @click="updateOrderStatus(order.id, 'PAID')"
                           :disabled="orderActionLoading"
                         >
-                          <vue-feather type="check-circle" class="feather-14 me-1"></vue-feather>
+                          <vue-feather type="check-circle"></vue-feather>
                         </button>
 
                         <button
@@ -517,7 +517,7 @@
                           @click="confirmCancelOrder(order.id)"
                           :disabled="orderActionLoading"
                         >
-                          <vue-feather type="x-circle" class="feather-14 me-1"></vue-feather>
+                          <vue-feather type="x-circle"></vue-feather>
                         </button>
                       </div>
                     </div>
