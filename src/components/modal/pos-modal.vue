@@ -14,7 +14,7 @@
             <p class="mb-0">Do you want to Print Receipt for the Completed Order</p>
             <div class="modal-footer d-sm-flex justify-content-between">
               <button type="button" class="btn btn-primary flex-fill"
-                      data-bs-toggle="modal" data-bs-target="#print-receipt" v-if="transactionData?.status === 'PAID'">Print Receipt<i
+                      data-bs-toggle="modal" data-bs-target="#print-receipt">Print Receipt<i
                   class="feather-arrow-right-circle icon-me-5"></i></button>
               <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal" @click="handleNextOrder">Next Order<i
                   class="feather-arrow-right-circle icon-me-5"></i></button>
@@ -470,32 +470,55 @@
                       </div>
                     </div>
 
-                    <div class="btn-row d-sm-flex align-items-center justify-content-between mt-3">
-                      <a
-                          href="javascript:void(0);"
-                          class="btn btn-primary btn-icon flex-fill"
-                          @click="toggleOrderDetails(order.id)"
+                    <div class="btn-row d-sm-flex align-items-center mt-3">
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        @click="toggleOrderDetails(order.id)"
                       >
                         <span v-if="expandedOrderId === order.id">Hide Details</span>
                         <span v-else>View Details</span>
-                      </a>
+                      </button>
+
                       <button
-                          href="javascript:void(0);"
-                          class="btn btn-success btn-icon flex-fill"
-                          @click="updateOrderStatus(order.id, 'PAID')"
-                          :disabled="orderActionLoading"
+                        type="button"
+                        class="btn btn-warning me-2"
+                        @click="editOrder(order)"
+                        data-bs-dismiss="modal"
+                      >
+                        <vue-feather type="edit" class="feather-14 me-1"></vue-feather>
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-success me-2"
+                        @click="updateOrderStatus(order.id, 'PAID')"
+                        :disabled="orderActionLoading"
                       >
                         <vue-feather type="check-circle" class="feather-14 me-1"></vue-feather>
                         Payment
                       </button>
+
                       <button
-                          href="javascript:void(0);"
-                          class="btn btn-danger btn-icon flex-fill"
-                          @click="confirmCancelOrder(order.id)"
-                          :disabled="orderActionLoading"
+                        type="button"
+                        class="btn btn-danger"
+                        @click="confirmCancelOrder(order.id)"
+                        :disabled="orderActionLoading"
                       >
                         <vue-feather type="x-circle" class="feather-14 me-1"></vue-feather>
                         Cancel
+                      </button>
+
+                      <button
+                          href="javascript:void(0);"
+                          class="btn btn-success btn-icon flex-fill"
+                          @click="printPaidOrder(order)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#print-receipt"
+                      >
+                        <vue-feather type="printer" class="feather-14 me-1"></vue-feather>
+                        Print Receipt
                       </button>
                     </div>
 
@@ -761,7 +784,8 @@ export default {
     ...mapActions("transaction", [
       "fetchTransactions",
       "getTransaction",
-      "updateTransactionStatus"
+      "updateTransactionStatus",
+      "prepareTransactionForEdit" // Add the new action
     ]),
 
     // Add formatIDR function to format prices
@@ -1195,7 +1219,39 @@ export default {
         case 'PAID': return 'bg-success';
         default: return 'bg-secondary';
       }
-    }
+    },
+
+    // New method to handle edit order action
+    async editOrder(order) {
+      try {
+        // First, get the full transaction details
+        const result = await this.getTransaction(order.id);
+
+        if (result.success) {
+          // Use the prepareTransactionForEdit action to set it for editing
+          await this.prepareTransactionForEdit(this.selectedTransaction);
+
+          // Emit an event that sales-pos.vue will listen for
+          this.$emit('edit-order', this.selectedTransaction);
+
+          // Show a brief success message
+          Swal.fire({
+            title: 'Loading Order',
+            text: 'Order loaded for editing',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
+      } catch (error) {
+        console.error('Error preparing order for edit:', error);
+        Swal.fire({
+          title: 'Error',
+          text: 'Could not load order for editing',
+          icon: 'error'
+        });
+      }
+    },
   },
   mounted() {
     // Fetch pending orders when the component is mounted to have data ready

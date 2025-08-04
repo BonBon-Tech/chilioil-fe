@@ -9,6 +9,7 @@ export default {
         pendingTransactions: [],
         paidTransactions: [],
         selectedTransaction: null,
+        editingTransaction: null, // Add new state for tracking the transaction being edited
     },
     mutations: {
         setLoading(state, loading) {
@@ -32,24 +33,45 @@ export default {
         setSelectedTransaction(state, transaction) {
             state.selectedTransaction = transaction;
         },
+        setEditingTransaction(state, transaction) {
+            state.editingTransaction = transaction;
+        },
+        clearEditingTransaction(state) {
+            state.editingTransaction = null;
+        },
     },
     actions: {
-        async createTransaction({ commit, dispatch }, payload) {
+        async createTransaction({ commit, dispatch, state }, payload) {
             commit('clearError');
             commit('setLoading', true);
             dispatch('loading/showLoading', null, { root: true });
             try {
-                const res = await requestWithAlert(
-                    "post",
-                    "/api/v1/transactions",
-                    payload,
-                    {},
-                    { success: true, successMessage: "Transaction completed", error: true }
-                );
-                commit('setLastTransaction', res.data?.data || null);
-                return { success: true, data: res.data?.data };
+                // If editing a transaction, update instead of create
+                if (state.editingTransaction) {
+                    const res = await requestWithAlert(
+                        "put",
+                        `/api/v1/transactions/${state.editingTransaction.id}`,
+                        payload,
+                        {},
+                        { success: true, successMessage: "Transaction updated", error: true }
+                    );
+                    commit('setLastTransaction', res.data?.data || null);
+                    commit('clearEditingTransaction'); // Clear editing state after successful update
+                    return { success: true, data: res.data?.data };
+                } else {
+                    // Regular transaction creation (no changes)
+                    const res = await requestWithAlert(
+                        "post",
+                        "/api/v1/transactions",
+                        payload,
+                        {},
+                        { success: true, successMessage: "Transaction completed", error: true }
+                    );
+                    commit('setLastTransaction', res.data?.data || null);
+                    return { success: true, data: res.data?.data };
+                }
             } catch (err) {
-                commit('setError', err.response?.data?.message || err.message || 'Failed to create transaction');
+                commit('setError', err.response?.data?.message || err.message || 'Failed to process transaction');
                 return { success: false, error: err };
             } finally {
                 commit('setLoading', false);
@@ -178,6 +200,17 @@ export default {
             }
         },
 
+        // New action to prepare a transaction for editing
+        prepareTransactionForEdit({ commit, dispatch }, transaction) {
+            commit('setEditingTransaction', transaction);
+            return { success: true };
+        },
+
+        // Clear the editing state when cancelled
+        cancelEdit({ commit }) {
+            commit('clearEditingTransaction');
+        },
+
         clearError({ commit }) {
             commit('clearError');
         },
@@ -189,5 +222,7 @@ export default {
         pendingTransactions: (state) => state.pendingTransactions,
         paidTransactions: (state) => state.paidTransactions,
         selectedTransaction: (state) => state.selectedTransaction,
+        editingTransaction: (state) => state.editingTransaction,
+        isEditing: (state) => state.editingTransaction !== null,
     },
 };
