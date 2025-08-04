@@ -60,7 +60,7 @@
                   <a
                     href="javascript:void(0);"
                     class="btn btn-primary"
-                    @click="resetProductFilter"
+                    @click="resetSearch"
                   >
                     <span class="me-1 d-flex align-items-center">
                       <vue-feather type="rotate-cw" class="feather-16"></vue-feather>
@@ -81,16 +81,16 @@
 
             <ul class="tabs owl-carousel pos-category">
               <Carousel
-                :wrap-around="false"
-                :settings="settings"
-                :breakpoints="breakpoints"
+                :wrap-around="true"
+                :touch-drag="true"
+                :mouse-drag="true"
+                items-to-show="4"
               >
                 <Slide v-for="item in categories" :key="item.id">
                   <li
                     :id="item.slug"
                     :class="{ active: selectedCategoryId === item.id }"
                     @click="selectCategory(item.id)"
-                    style="cursor:pointer"
                   >
                     <a href="javascript:void(0);">
                       <img
@@ -557,27 +557,20 @@ export default {
       Shipping: ["15", "20", "25", "30"],
       Discount: ["10%", "10%", "15%", "20%", "25%", "30%"],
       settings: {
-        itemsToShow: 1,
-        snapAlign: "center",
-        loop: true,
+        // itemsToShow: 1,
+        // snapAlign: "center",
+        // loop: true,
       },
       breakpoints: {
-        575: {
-          itemsToShow: 3,
-          snapAlign: "center",
+        0: {
+          itemsToShow: 1,
         },
-        767: {
+        640: {
           itemsToShow: 3,
-          snapAlign: "center",
-        },
-        991: {
-          itemsToShow: 4,
-          snapAlign: "center",
         },
         1024: {
-          itemsToShow: 5,
-          snapAlign: "start",
-        },
+          itemsToShow: 4,
+        }
       },
       selectedCategoryId: null,
       cart: [],
@@ -607,6 +600,7 @@ export default {
       productListCollapsed: false,
       // Store the resize handler to be able to remove it later
       resizeHandler: null,
+      currentSlide: 0,
     }
   },
   computed: {
@@ -843,6 +837,11 @@ export default {
     selectPaymentMethod(method) {
       this.selectedPaymentMethod = method;
     },
+    resetSearch() {
+      this.searchProductName = "";
+      this.selectedCategoryId = null;
+      this.fetchProducts({ per_page: 9999 }); // Reset to load all products
+    },
     searchProducts() {
       const params = {
         per_page: 9999 // Load all matching products
@@ -979,27 +978,27 @@ export default {
       this.selectedPaymentMethod = null;
     }
 
-    // Auto-collapse product list on small screens initially
-    if (window.innerWidth < 768) {
-      this.productListCollapsed = true;
-    }
-
-    // Define the resize handler function and store it in data so we can reference it later
-    this.resizeHandler = () => {
-      // Only auto-toggle on orientation change
-      if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
-        this.productListCollapsed = true;
-      }
-    };
+    // // Auto-collapse product list on small screens initially
+    // if (window.innerWidth < 768) {
+    //   this.productListCollapsed = true;
+    // }
+    //
+    // // Define the resize handler function and store it in data so we can reference it later
+    // this.resizeHandler = () => {
+    //   // Only auto-toggle on orientation change
+    //   if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+    //     this.productListCollapsed = true;
+    //   }
+    // };
 
     // Add resize listener to adjust collapse state on orientation change
-    window.addEventListener('resize', this.resizeHandler);
+    // window.addEventListener('resize', this.resizeHandler);
   },
   beforeUnmount() {
     // Properly remove the resize event listener by providing both the event name and the handler function
-    if (this.resizeHandler) {
-      window.removeEventListener('resize', this.resizeHandler);
-    }
+    // if (this.resizeHandler) {
+    //   window.removeEventListener('resize', this.resizeHandler);
+    // }
   }
 };
 </script>
