@@ -580,7 +580,7 @@ export default {
         store_id: "",
         product_category_id: "",
         selling_type: "",
-        price: "",
+        price: 0,
         image: null,
         status: true, // default to active
       },
@@ -661,7 +661,7 @@ export default {
         store_id: this.form.store_id !== undefined && this.form.store_id !== null ? this.form.store_id : "",
         product_category_id: this.form.product_category_id !== undefined && this.form.product_category_id !== null ? this.form.product_category_id : "",
         selling_type: this.form.selling_type || "",
-        price: this.form.price || "",
+        price: this.form.price || 0,
         image: this.form.image || null,
         status: this.form.status,
       };
