@@ -11,6 +11,7 @@ import designation from './designation';
 import employee from './employee';
 import transaction from './transaction';
 import sales from './sales';
+import salesOnline from './sales-online';
 import dashboard from './dashboard'; // Import the new dashboard module
 
 const store = createStore({
@@ -27,6 +28,7 @@ const store = createStore({
         employee,
         transaction,
         sales,
+        salesOnline,
         dashboard // Add the new dashboard module
     },
 });
