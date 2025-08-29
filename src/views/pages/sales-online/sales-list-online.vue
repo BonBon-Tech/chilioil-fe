@@ -308,34 +308,33 @@
                 </td>
                 <td class="text-center">
                   <div class="action-btns">
-                    <a
-                        href="javascript:void(0);"
-                        class="btn btn-sm btn-info me-1"
-                        @click="viewTransaction(transaction.id)"
-                        title="View Details"
-                        data-bs-toggle="modal"
-                        data-bs-target="#sales-details-new"
+                    <router-link
+                      :to="'/sales-online/detail/' + transaction.id"
+                      class="btn btn-sm btn-info me-1"
+                      title="View Details"
                     >
                       <vue-feather type="eye" class="feather-16"></vue-feather>
+                    </router-link>
+                    <!--
+                    <a
+                      v-if="transaction.status === 'PENDING'"
+                      href="javascript:void(0);"
+                      class="btn btn-sm btn-primary me-1"
+                      @click="editTransaction(transaction.id)"
+                      title="Edit"
+                    >
+                      <vue-feather type="edit" class="feather-16"></vue-feather>
                     </a>
-                    <!--                      <a-->
-                    <!--                        v-if="transaction.status === 'PENDING'"-->
-                    <!--                        href="javascript:void(0);"-->
-                    <!--                        class="btn btn-sm btn-primary me-1"-->
-                    <!--                        @click="editTransaction(transaction.id)"-->
-                    <!--                        title="Edit"-->
-                    <!--                      >-->
-                    <!--                        <vue-feather type="edit" class="feather-16"></vue-feather>-->
-                    <!--                      </a>-->
-                    <!--                      <a-->
-                    <!--                        v-if="transaction.status === 'PENDING'"-->
-                    <!--                        href="javascript:void(0);"-->
-                    <!--                        class="btn btn-sm btn-danger"-->
-                    <!--                        @click="confirmDelete(transaction.id)"-->
-                    <!--                        title="Delete"-->
-                    <!--                      >-->
-                    <!--                        <vue-feather type="trash-2" class="feather-16"></vue-feather>-->
-                    <!--                      </a>-->
+                    <a
+                      v-if="transaction.status === 'PENDING'"
+                      href="javascript:void(0);"
+                      class="btn btn-sm btn-danger"
+                      @click="confirmDelete(transaction.id)"
+                      title="Delete"
+                    >
+                      <vue-feather type="trash-2" class="feather-16"></vue-feather>
+                    </a>
+                    -->
                   </div>
                 </td>
               </tr>
@@ -554,17 +553,6 @@ export default {
       if (page > 0 && page <= this.pagination.last_page && page !== this.pagination.current_page) {
         this.changePage(page);
       }
-    },
-
-    // View transaction details
-    viewTransaction(id) {
-      // You can implement a modal to display transaction details
-      // or navigate to a transaction details page
-      this.getTransaction(id)
-          .then(() => {
-            // Open details modal
-            console.log('View transaction details for ID:', id);
-          });
     },
 
     // Confirm delete

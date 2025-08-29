@@ -158,6 +158,62 @@ export default {
                 dispatch('loading/hideLoading', null, { root: true });
             }
         },
+
+        async saveTransaction({ commit, dispatch }, payload) {
+            commit('setLoading', true);
+            commit('clearError');
+            dispatch('loading/showLoading', null, { root: true });
+
+            try {
+                const response = await requestWithAlert(
+                    'post',
+                    '/api/v1/transactions',
+                    payload,
+                    {},
+                    {
+                        success: true,
+                        successMessage: 'Transaction saved successfully',
+                        error: true
+                    }
+                );
+
+                return { success: true, data: response.data };
+            } catch (error) {
+                commit('setError', error.response?.data?.message || error.message || 'Failed to save transaction');
+                return { success: false, error };
+            } finally {
+                commit('setLoading', false);
+                dispatch('loading/hideLoading', null, { root: true });
+            }
+        },
+
+        async updateTransactionStatus({ commit, dispatch }, { id, status }) {
+            commit('setLoading', true);
+            commit('clearError');
+            dispatch('loading/showLoading', null, { root: true });
+
+            try {
+                const response = await requestWithAlert(
+                    'put',
+                    `/api/v1/transactions/${id}`,
+                    { status },
+                    {},
+                    {
+                        success: true,
+                        successMessage: `Transaction status updated to ${status}`,
+                        error: true
+                    }
+                );
+
+                return { success: true, data: response.data };
+            } catch (error) {
+                commit('setError', error.response?.data?.message || error.message || 'Failed to update transaction status');
+                return { success: false, error };
+            } finally {
+                commit('setLoading', false);
+                dispatch('loading/hideLoading', null, { root: true });
+            }
+        },
     },
     getters: {
         transaction: state => state.transaction,

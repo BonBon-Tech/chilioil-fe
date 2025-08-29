@@ -672,6 +672,7 @@ const routes = [
       { path: '', redirect: '/sales-online/sales-list' },
       { path: "sales-list", component: SalesListOnline, meta: { isAuth: true, access: ['admin'] } },
       { path: "pos", component: POSOnline, meta: { isAuth: true, access: ['admin'] } },
+      { path: "detail/:id", component: () => import('@/views/pages/sales-online/sales-pos-online-detail.vue'), meta: { isAuth: true, access: ['admin'] } },
     ]
   },
 ];

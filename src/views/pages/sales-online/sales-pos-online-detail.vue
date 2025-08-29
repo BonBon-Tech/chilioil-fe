@@ -6,8 +6,8 @@
       <div class="page-header">
         <div class="add-item d-flex">
           <div class="page-title">
-            <h4>New Sales</h4>
-            <h6>Create new sales</h6>
+            <h4>Transaction Details</h4>
+            <h6>View transaction #{{ transactionId }}</h6>
           </div>
         </div>
         <ul class="table-top-head">
@@ -32,8 +32,24 @@
           </li>
         </ul>
       </div>
-      <!-- /add -->
-      <form @submit.prevent="submitForm">
+      <!-- Loading state -->
+      <div v-if="loading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading transaction details...</p>
+      </div>
+
+      <!-- Error state -->
+      <div v-else-if="error" class="alert alert-danger my-4">
+        {{ error }}
+        <div class="mt-3">
+          <button class="btn btn-sm btn-primary" @click="fetchTransactionData">Try Again</button>
+        </div>
+      </div>
+
+      <!-- Transaction details -->
+      <form v-else @submit.prevent="submitForm">
         <div class="card">
           <div class="card-body add-product pb-0">
             <div class="accordion-card-one accordion mt-3" id="accordionSalesInformation">
@@ -69,26 +85,29 @@
                     <div class="row">
                       <div class="col-lg-4 col-sm-6 col-12">
                         <div class="mb-3 add-product">
+                          <label class="form-label">Transaction Code</label>
+                          <input type="text" class="form-control" v-model="form.code" disabled />
+                        </div>
+                      </div>
+
+                      <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="mb-3 add-product">
                           <label class="form-label">Sales Source</label>
-                          <custom-select-form
-                              :options="salesTypeOptions"
-                              placeholder="Choose"
-                              v-model="form.store_id"
-                          />
+                          <input type="text" class="form-control" v-model="form.type" disabled />
                         </div>
                       </div>
 
                       <div class="col-lg-4 col-sm-6 col-12">
                         <div class="mb-3 add-product">
                           <label class="form-label">Date</label>
-                          <input type="date" class="form-control" v-model="form.date" />
+                          <input type="date" class="form-control" v-model="form.date" disabled />
                         </div>
                       </div>
 
                       <div class="col-lg-4 col-sm-6 col-12">
                         <div class="mb-3 add-product">
                           <label class="form-label">PIC Name</label>
-                          <input type="text" class="form-control" v-model="form.customer_name" />
+                          <input type="text" class="form-control" v-model="form.customer_name" disabled />
                         </div>
                       </div>
 
@@ -109,7 +128,14 @@
                       <div class="col-lg-4 col-sm-6 col-12">
                         <div class="mb-3 add-product">
                           <label class="form-label">Online Sale Revenue</label>
-                          <input type="number" class="form-control" v-model="form.online_transaction_revenue" />
+                          <input type="text" class="form-control" :value="formatIDR(form.online_transaction_revenue)" disabled />
+                        </div>
+                      </div>
+
+                      <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="mb-3 add-product">
+                          <label class="form-label">Total</label>
+                          <input type="text" class="form-control" :value="formatIDR(form.total)" disabled />
                         </div>
                       </div>
                     </div>
@@ -151,7 +177,7 @@
                     <template v-if="stores.length === 0">
                       <div class="row">
                         <div class="col-lg-12 col-sm-12 col-12">
-                          <p class="text-center">No Store Selected</p>
+                          <p class="text-center">No Store Data</p>
                         </div>
                       </div>
                     </template>
@@ -185,78 +211,6 @@
                     </template>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div class="accordion-card-one accordion mt-3" id="accordionAddProduct">
-              <div class="accordion-item">
-                <div class="accordion-header" id="headingProduct">
-                  <div
-                      class="accordion-button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#collapseAddProduct"
-                      aria-controls="collapseAddProduct"
-                  >
-                    <div class="addproduct-icon">
-                      <h5>
-                        <vue-feather type="plus" class="add-info"></vue-feather
-                        ><span>Add Product</span>
-                      </h5>
-                      <a href="javascript:void(0);"
-                      ><vue-feather
-                          type="chevron-down"
-                          class="chevron-down-add"
-                      ></vue-feather
-                      ></a>
-                    </div>
-                  </div>
-                </div>
-                <div
-                    id="collapseAddProduct"
-                    class="accordion-collapse collapse show"
-                    aria-labelledby="headingProduct"
-                    data-bs-parent="#accordionAddProduct"
-                >
-                  <div class="accordion-body">
-                    <div class="row">
-                      <div class="col-lg-12 col-sm-12 col-12">
-                        <div class="mb-3 add-product">
-                          <label class="form-label">Search Product</label>
-                          <input @blur="fetchProductsByName" type="text" class="form-control" placeholder="Search Product" v-model="params.name" required />
-                        </div>
-                      </div>
-
-                      <div class="col-lg-12 col-sm-12 col-12">
-                        <table class="table table-hover table-center mb-0">
-                          <thead>
-                            <tr>
-                              <th>Product Name</th>
-                              <th>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(product, index) in products" :key="index">
-                              <td>{{ product.name }} <span v-if="findProductOnItems(product.id)" class="label label-success">Added</span></td>
-                              <td>
-                                <button
-                                    class="btn btn-primary btn-sm"
-                                    type="button"
-                                    @click="addItem(product)"
-                                >
-                                  <vue-feather type="plus" class="feather-14"></vue-feather>
-                                </button>
-                              </td>
-                            </tr>
-                            <tr v-if="products.length === 0">
-                              <td colspan="2" class="text-center">Please Search Product.</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
 
@@ -295,33 +249,25 @@
                         <table class="table table-hover table-center mb-0">
                           <thead>
                           <tr>
+                            <th>Product Image</th>
                             <th>Product Name</th>
                             <th>Price</th>
                             <th>Qty</th>
                             <th>Total</th>
-                            <th>Action</th>
                           </tr>
                           </thead>
                           <tbody>
                           <tr v-for="(item, index) in items" :key="index">
+                            <td>
+                              <img :src="item.image_path" alt="Product" class="img-fluid" style="max-width: 50px; max-height: 50px;" />
+                            </td>
                             <td>{{ item.name }}</td>
                             <td>{{ formatIDR(item.price) }}</td>
-                            <td>
-                              <input style="width: 100px !important;" type="number" class="form-control" v-model="item.qty" />
-                            </td>
-                            <td>{{ formatIDR(item.price * item.qty) }}</td>
-                            <td>
-                              <button
-                                  class="btn btn-danger btn-sm"
-                                  type="button"
-                                  @click="deleteItem(item)"
-                              >
-                                <vue-feather type="trash" class="feather-14"></vue-feather>
-                              </button>
-                            </td>
+                            <td>{{ item.qty }}</td>
+                            <td>{{ formatIDR(item.total_price) }}</td>
                           </tr>
                           <tr v-if="items.length === 0">
-                            <td colspan="5" class="text-center">Please Add Product.</td>
+                            <td colspan="5" class="text-center">No products found.</td>
                           </tr>
                           </tbody>
                         </table>
@@ -329,74 +275,76 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
+            <!-- Add status update buttons after transaction information -->
+            <div class="card" v-if="form.status === 'PENDING'">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <h5 class="mb-3">Update Transaction Status</h5>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-success" @click="updateStatus('PAID')">
+                        <vue-feather type="check-circle" class="me-2"></vue-feather>Mark as PAID
+                      </button>
+                      <button type="button" class="btn btn-danger" @click="updateStatus('CANCELED')">
+                        <vue-feather type="x-circle" class="me-2"></vue-feather>Mark as CANCELED
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="col-lg-12">
           <div class="btn-addproduct mb-4">
-            <button type="button" class="btn btn-cancel me-2" @click="cancel">Cancel</button>
-            <button type="submit" class="btn btn-submit">Save Sales</button>
+            <button type="button" class="btn btn-cancel" @click="cancel">Back to List</button>
           </div>
         </div>
       </form>
-      <!-- /add -->
     </div>
   </div>
 </template>
 <script>
-import { mapActions, mapGetters } from 'vuex';
-import CustomSelectForm from "@/components/select/custom-select-form.vue";
+import { mapActions } from 'vuex';
+import Swal from 'sweetalert2';
 
 export default {
   components: {
-    CustomSelectForm,
   },
   data() {
     return {
+      transactionId: null,
+      loading: true,
+      error: null,
       form: {
+        code: "",
         date: "",
         customer_name: "",
         type: "",
-        payment_type: "BANK_TRANSFER",
-        status: "PENDING",
-        items: [],
+        payment_type: "",
+        status: "",
+        total: 0,
+        sub_total: 0,
+        total_item: 0,
         online_transaction_revenue: 0
       },
       items: [],
-      params: {
-        page: 1,
-        per_page: 9999,
-        name: '',
-      },
       stores: []
     };
   },
   computed: {
-    ...mapGetters('product', ['products']),
-    salesTypeOptions() {
-      return [
-        {name: "Shopee Food", value: "SHOPEEFOOD"},
-        {name: "Go Food", value: "GOFOOD"},
-        {name: "Grab Food", value: "GRABFOOD"},
-      ];
-    },
     totalAmount() {
       return this.items.reduce((total, item) => {
-        return total + (item.price * item.qty);
+        return total + parseFloat(item.total_price);
       }, 0);
     }
   },
   methods: {
-    ...mapActions('product', ['fetchProducts']),
-    ...mapActions('salesOnline', ['saveTransaction']),
+    ...mapActions('salesOnline', ['getTransaction', 'updateTransactionStatus']),
 
-    fetchProductsByName() {
-      if (this.params.name.length >= 3) {
-        this.fetchProducts(this.params);
-      }
-    },
     formatIDR(value) {
       if (value === undefined || value === null) return 'Rp 0,00';
 
@@ -409,98 +357,67 @@ export default {
         maximumFractionDigits: 2
       });
     },
-    async submitForm() {
-      // Validate form
-      if (!this.form.store_id) {
-        this.$store.dispatch('alert/triggerAlert', {
-          type: 'danger',
-          message: 'Please select a sales source',
-        });
-        return;
-      }
 
-      if (this.items.length === 0) {
-        this.$store.dispatch('alert/triggerAlert', {
-          type: 'danger',
-          message: 'Please add at least one product',
-        });
-        return;
-      }
+    async fetchTransactionData() {
+      this.loading = true;
+      this.error = null;
 
-      if (!this.form.date) {
-        this.$store.dispatch('alert/triggerAlert', {
-          type: 'danger',
-          message: 'Please select a date',
-        });
-        return;
-      }
+      try {
+        const result = await this.getTransaction(this.transactionId);
 
-      // Format the payload
-      const payload = {
-        date: this.form.date,
-        customer_name: this.form.customer_name,
-        type: this.form.store_id, // Use the selected store ID as type
-        payment_type: this.form.payment_type,
-        status: this.form.status,
-        online_transaction_revenue: this.form.online_transaction_revenue,
-        items: this.items.map((item) => {
-          return {
-            product_id: item.product_id,
-            qty: item.qty,
-            price: item.price,
-            note: ""
-          }
-        })
-      };
+        if (result.success) {
+          const transaction = result.data;
 
-      // Call the store action to save the transaction
-      const result = await this.saveTransaction(payload);
+          // Format date from ISO to YYYY-MM-DD for input
+          const dateObj = new Date(transaction.date);
+          const formattedDate = dateObj.toISOString().split('T')[0];
 
-      if (result.success) {
-        // Redirect to sales list on success
-        this.$router.push('/sales-online/sales-list');
-      }
-    },
-    deleteItem(product) {
-      this.items = this.items.filter(item => item.product_id !== product.product_id);
-    },
-    addItem(product) {
-      let isExist = false;
+          // Set form data
+          this.form = {
+            code: transaction.code,
+            date: formattedDate,
+            customer_name: transaction.customer_name,
+            type: transaction.type,
+            payment_type: transaction.payment_type,
+            status: transaction.status,
+            total: transaction.total,
+            sub_total: transaction.sub_total,
+            total_item: transaction.total_item,
+            online_transaction_revenue: transaction.online_transaction_revenue
+          };
 
-      this.items.forEach(item => {
-        if (item.product_id === product.id) {
-          isExist = true;
-        }
-      });
+          // Set items
+          this.items = transaction.transaction_items.map(item => ({
+            ...item,
+            store_id: item.store.id
+          }));
 
-      if (!isExist) {
-        this.items.push({
-          product_id: product.id,
-          name: product.name,
-          price: product.price,
-          qty: 0,
-          store_id: product.store.id,
-        });
-
-        let isStoreExist = false;
-
-        this.stores.forEach(store => {
-          if (store.id === product.store.id) {
-            isStoreExist = true;
-          }
-        });
-
-        if (!isStoreExist) {
-          this.stores.push({
-            id: product.store.id,
-            name: product.store.name
+          // Extract unique stores from items
+          const storeMap = {};
+          transaction.transaction_items.forEach(item => {
+            if (item.store && !storeMap[item.store.id]) {
+              storeMap[item.store.id] = {
+                id: item.store.id,
+                name: item.store.name
+              };
+            }
           });
+
+          this.stores = Object.values(storeMap);
+        } else {
+          this.error = "Failed to load transaction data";
         }
+      } catch (err) {
+        this.error = err.message || "An error occurred while fetching transaction data";
+      } finally {
+        this.loading = false;
       }
     },
+
     cancel() {
       this.$router.push("/sales-online/sales-list");
     },
+
     toggleCollapse() {
       const collapseHeader = this.$refs.collapseHeader;
 
@@ -509,46 +426,101 @@ export default {
         document.body.classList.toggle("header-collapse");
       }
     },
+
     calculateItemByStore(storeId) {
       return this.items
         .filter(item => item.store_id === storeId)
-        .reduce((total, item) => total + (item.price * item.qty), 0);
+        .reduce((total, item) => total + parseFloat(item.total_price), 0);
     },
+
     percentage(storeId) {
       const storeTotal = this.calculateItemByStore(storeId);
-      if (storeTotal === 0) return 0;
+      if (storeTotal === 0 || this.totalAmount === 0) return 0;
       return Number(((storeTotal / this.totalAmount) * 100).toFixed(2));
     },
+
     calculateRevenue(storeId) {
       const storePercentage = this.percentage(storeId);
-      if (storePercentage === 0) return 0;
-      return storePercentage / 100 * this.form.online_transaction_revenue;
+      if (storePercentage === 0 || this.totalAmount === 0) return 0;
+      return storePercentage / 100 * parseFloat(this.form.online_transaction_revenue);
     },
+
     calculateTax(storeId) {
       const storePercentage = this.percentage(storeId);
       if (storePercentage === 0) return 0;
 
-      const storeTotal = this.calculateItemByStore(storeId)
-      const actualRevenue = this.calculateRevenue(storeId)
+      const storeTotal = this.calculateItemByStore(storeId);
+      const actualRevenue = this.calculateRevenue(storeId);
 
       return storeTotal - actualRevenue;
     },
-    findProductOnItems(productId) {
-      return this.items.find(item => item.product_id === productId);
 
+    async updateStatus(newStatus) {
+      // Show SweetAlert confirmation dialog
+      const result = await Swal.fire({
+        title: 'Update Status',
+        text: `Are you sure you want to mark this transaction as ${newStatus}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: newStatus === 'PAID' ? '#3085d6' : '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: `Yes, mark as ${newStatus}!`
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.loading = true;
+
+      try {
+        const apiResult = await this.updateTransactionStatus({
+          id: this.transactionId,
+          status: newStatus
+        });
+
+        if (apiResult.success) {
+          // Refetch the entire transaction data to ensure everything is in sync
+          await this.fetchTransactionData();
+
+          // Show success message
+          Swal.fire({
+            title: 'Status Updated!',
+            text: `Transaction has been marked as ${newStatus}`,
+            icon: 'success',
+            confirmButtonColor: '#3085d6'
+          });
+        }
+      } catch (err) {
+        console.error('Error updating status:', err);
+
+        // Show error message
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to update transaction status',
+          icon: 'error',
+          confirmButtonColor: '#d33'
+        });
+      } finally {
+        this.loading = false;
+      }
     }
   },
-  mounted() {
-    // Initialize form date with current date
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    let mm = today.getMonth() + 1;
-    let dd = today.getDate();
-
-    if (dd < 10) dd = '0' + dd;
-    if (mm < 10) mm = '0' + mm;
-
-    this.form.date = `${yyyy}-${mm}-${dd}`;
-  },
+  created() {
+    this.transactionId = this.$route.params.id;
+    this.fetchTransactionData();
+  }
 };
 </script>
+
+<style scoped>
+.badge {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+</style>
