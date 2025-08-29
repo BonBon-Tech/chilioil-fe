@@ -10,7 +10,9 @@ import expense from './expense';
 import designation from './designation';
 import employee from './employee';
 import transaction from './transaction';
-import sales from './sales'; // Import the new sales module
+import sales from './sales';
+import salesOnline from './sales-online';
+import dashboard from './dashboard'; // Import the new dashboard module
 
 const store = createStore({
     modules: {
@@ -25,7 +27,9 @@ const store = createStore({
         designation,
         employee,
         transaction,
-        sales // Add the new sales module
+        sales,
+        salesOnline,
+        dashboard // Add the new dashboard module
     },
 });
 

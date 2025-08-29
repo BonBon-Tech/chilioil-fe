@@ -3,53 +3,76 @@
     <layout-header></layout-header>
     <layout-sidebar></layout-sidebar>
     <div class="page-wrapper" style="text-align: center !important;">
-      <h1>Welcome To APP</h1>
-<!--      <div class="content">-->
-<!--        <div class="row">-->
-<!--          <div class="col-xl-3 col-sm-6 col-12 d-flex">-->
-<!--            <div class="dash-widget w-100">-->
-<!--              <div class="dash-widgetimg">-->
-<!--                <span><img src="@/assets/img/icons/dash1.svg" alt="img" /></span>-->
-<!--              </div>-->
-<!--              <div class="dash-widgetcontent">-->
-<!--                <h5>-->
-<!--                  $-->
-<!--                  <vue3-autocounter-->
-<!--                    class="counters"-->
-<!--                    ref="counter"-->
-<!--                    :startAmount="107144.0"-->
-<!--                    :delay="3"-->
-<!--                    :endAmount="307144.0"-->
-<!--                    :duration="5"-->
-<!--                    :autoinit="true"-->
-<!--                  />-->
-<!--                </h5>-->
-<!--                <h6>Total Purchase Due</h6>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div class="col-xl-3 col-sm-6 col-12 d-flex">-->
-<!--            <div class="dash-widget dash1 w-100">-->
-<!--              <div class="dash-widgetimg">-->
-<!--                <span><img src="@/assets/img/icons/dash2.svg" alt="img" /></span>-->
-<!--              </div>-->
-<!--              <div class="dash-widgetcontent">-->
-<!--                <h5>-->
-<!--                  $-->
-<!--                  <vue3-autocounter-->
-<!--                    class="counters"-->
-<!--                    ref="counter"-->
-<!--                    :startAmount="1385.0"-->
-<!--                    :delay="3"-->
-<!--                    :endAmount="4385.0"-->
-<!--                    :duration="5"-->
-<!--                    :autoinit="true"-->
-<!--                  />-->
-<!--                </h5>-->
-<!--                <h6>Total Sales Due</h6>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
+      <div class="content">
+        <div class="row">
+          <div class="col-xl-6 col-sm-6 col-12 d-flex">
+            <div class="dash-widget w-100">
+              <div class="dash-widgetimg">
+                <span><img src="@/assets/img/icons/dash1.svg" alt="img" /></span>
+              </div>
+              <div class="dash-widgetcontent">
+                <h5>
+                  Rp
+                  <vue3-autocounter
+                    class="counters"
+                    ref="counter"
+                    :startAmount="0"
+                    :delay="1"
+                    :endAmount="summary.expense_total"
+                    :duration="1"
+                    :autoinit="true"
+                  />
+                </h5>
+                <h6>Total Expense</h6>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-sm-6 col-12 d-flex">
+            <div class="dash-widget dash1 w-100">
+              <div class="dash-widgetimg">
+                <span><img src="@/assets/img/icons/dash2.svg" alt="img" /></span>
+              </div>
+              <div class="dash-widgetcontent">
+                <h5>
+                  Rp
+                  <vue3-autocounter
+                    class="counters"
+                    ref="counter"
+                    :startAmount="0"
+                    :delay="1"
+                    :endAmount="summary.transaction_total"
+                    :duration="1"
+                    :autoinit="true"
+                  />
+                </h5>
+                <h6>Total Transaction</h6>
+              </div>
+            </div>
+          </div>
+          <template v-for="store in store_sales" :key="store.store_id">
+            <div class="col-xl-4 col-sm-4 col-12 d-flex">
+              <div class="dash-widget dash1 w-100">
+                <div class="dash-widgetimg">
+                  <span><img src="@/assets/img/icons/dash2.svg" alt="img" /></span>
+                </div>
+                <div class="dash-widgetcontent">
+                  <h5>
+                    Rp
+                    <vue3-autocounter
+                        class="counters"
+                        ref="counter"
+                        :startAmount="0"
+                        :delay="1"
+                        :endAmount="store.total_sales"
+                        :duration="1"
+                        :autoinit="true"
+                    />
+                  </h5>
+                  <h6>Total Sales {{ store.store_name }}</h6>
+                </div>
+              </div>
+            </div>
+          </template>
 <!--          <div class="col-xl-3 col-sm-6 col-12 d-flex">-->
 <!--            <div class="dash-widget dash2 w-100">-->
 <!--              <div class="dash-widgetimg">-->
@@ -94,28 +117,28 @@
 <!--              </div>-->
 <!--            </div>-->
 <!--          </div>-->
-<!--          <div class="col-xl-3 col-sm-6 col-12 d-flex">-->
-<!--            <div class="dash-count">-->
-<!--              <div class="dash-counts">-->
-<!--                <h4>100</h4>-->
-<!--                <h5>Customers</h5>-->
-<!--              </div>-->
-<!--              <div class="dash-imgs">-->
-<!--                <vue-feather type="user"></vue-feather>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div class="col-xl-3 col-sm-6 col-12 d-flex">-->
-<!--            <div class="dash-count das1">-->
-<!--              <div class="dash-counts">-->
-<!--                <h4>110</h4>-->
-<!--                <h5>Suppliers</h5>-->
-<!--              </div>-->
-<!--              <div class="dash-imgs">-->
-<!--                <vue-feather type="user-check"></vue-feather>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
+          <div class="col-xl-6 col-sm-6 col-12 d-flex">
+            <div class="dash-count">
+              <div class="dash-counts">
+                <h4>{{ summary.user_count }}</h4>
+                <h5>Employees</h5>
+              </div>
+              <div class="dash-imgs">
+                <vue-feather type="user"></vue-feather>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-sm-6 col-12 d-flex">
+            <div class="dash-count das1">
+              <div class="dash-counts">
+                <h4>{{ summary.product_count }}</h4>
+                <h5>Products</h5>
+              </div>
+              <div class="dash-imgs">
+                <vue-feather type="gift"></vue-feather>
+              </div>
+            </div>
+          </div>
 <!--          <div class="col-xl-3 col-sm-6 col-12 d-flex">-->
 <!--            <div class="dash-count das2">-->
 <!--              <div class="dash-counts">-->
@@ -142,58 +165,61 @@
 <!--              </div>-->
 <!--            </div>-->
 <!--          </div>-->
-<!--        </div>-->
-<!--        &lt;!&ndash; Button trigger modal &ndash;&gt;-->
+        </div>
+        <!-- Button trigger modal -->
 
-<!--        <div class="row">-->
-<!--          <div class="col-xl-7 col-sm-12 col-12 d-flex">-->
-<!--            <div class="card flex-fill">-->
-<!--              <div class="card-header d-flex justify-content-between align-items-center">-->
-<!--                <h5 class="card-title mb-0">Purchase & Sales</h5>-->
-<!--                <div class="graph-sets">-->
-<!--                  <ul class="mb-0">-->
-<!--                    <li>-->
-<!--                      <span>Sales</span>-->
-<!--                    </li>-->
-<!--                    <li>-->
-<!--                      <span>Purchase</span>-->
-<!--                    </li>-->
-<!--                  </ul>-->
-<!--                  <div class="dropdown dropdown-wraper">-->
-<!--                    <button-->
-<!--                      class="btn btn-light btn-sm dropdown-toggle"-->
-<!--                      type="button"-->
-<!--                      id="dropdownMenuButton"-->
-<!--                      data-bs-toggle="dropdown"-->
-<!--                      aria-expanded="false"-->
-<!--                    >-->
-<!--                      2024-->
-<!--                    </button>-->
-<!--                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">-->
-<!--                      <li>-->
-<!--                        <a href="javascript:void(0);" class="dropdown-item">2024</a>-->
-<!--                      </li>-->
-<!--                      <li>-->
-<!--                        <a href="javascript:void(0);" class="dropdown-item">2023</a>-->
-<!--                      </li>-->
-<!--                      <li>-->
-<!--                        <a href="javascript:void(0);" class="dropdown-item">2022</a>-->
-<!--                      </li>-->
-<!--                    </ul>-->
-<!--                  </div>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--              <div class="card-body">-->
-<!--                <div id="sales_charts"></div>-->
-<!--                <apexchart-->
-<!--                  type="bar"-->
-<!--                  height="300"-->
-<!--                  :options="basicAreaChart.sline"-->
-<!--                  :series="basicAreaChart.series"-->
-<!--                ></apexchart>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
+        <div class="row">
+          <div class="col-xl-12 col-sm-12 col-12 d-flex">
+            <div class="card flex-fill">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Purchase & Sales</h5>
+                <div class="graph-sets">
+                  <ul class="mb-0">
+                    <li class="d-flex">
+                      ChiliOil <div style="color: #28C76F !important; font-weight: 900;">X</div>
+                    </li>
+                    <li class="d-flex">
+                      Sate Nagihin<div style="color: #EA5455 !important; font-weight: 900;">X</div>
+                    </li>
+                    <li class="d-flex">
+                      Minuman<div style="color: #F5D010FF !important; font-weight: 900;">X</div>
+                    </li>
+                  </ul>
+                  <div class="dropdown dropdown-wraper">
+                    <button
+                      class="btn btn-light btn-sm dropdown-toggle"
+                      type="button"
+                      id="dropdownMenuButton"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      2024
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <li>
+                        <a href="javascript:void(0);" class="dropdown-item">2024</a>
+                      </li>
+                      <li>
+                        <a href="javascript:void(0);" class="dropdown-item">2023</a>
+                      </li>
+                      <li>
+                        <a href="javascript:void(0);" class="dropdown-item">2022</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="sales_charts"></div>
+                <apexchart
+                  type="bar"
+                  height="300"
+                  :options="basicAreaChart.sline"
+                  :series="basicAreaChart.series"
+                ></apexchart>
+              </div>
+            </div>
+          </div>
 <!--          <div class="col-xl-5 col-sm-12 col-12 d-flex">-->
 <!--            <div class="card flex-fill default-cover mb-4">-->
 <!--              <div class="card-header d-flex justify-content-between align-items-center">-->
@@ -241,77 +267,119 @@
 <!--              </div>-->
 <!--            </div>-->
 <!--          </div>-->
-<!--        </div>-->
-<!--        <div class="card">-->
-<!--          <div class="card-header">-->
-<!--            <h4 class="card-title">Expired Products</h4>-->
-<!--          </div>-->
-<!--          <div class="card-body">-->
-<!--            <div class="table-responsive dataview">-->
-<!--              <table class="table dashboard-expired-products">-->
-<!--                <thead>-->
-<!--                  <tr>-->
-<!--                    <th class="no-sort">-->
-<!--                      <label class="checkboxs">-->
-<!--                        <input type="checkbox" id="select-all" />-->
-<!--                        <span class="checkmarks"></span>-->
-<!--                      </label>-->
-<!--                    </th>-->
-<!--                    <th>Product</th>-->
-<!--                    <th>SKU</th>-->
-<!--                    <th>Manufactured Date</th>-->
-<!--                    <th>Expired Date</th>-->
-<!--                    <th class="no-sort">Action</th>-->
-<!--                  </tr>-->
-<!--                </thead>-->
-<!--                <tbody>-->
-<!--                  <tr v-for="item in AdminExpired" :key="item.id">-->
-<!--                    <td>-->
-<!--                      <label class="checkboxs">-->
-<!--                        <input type="checkbox" />-->
-<!--                        <span class="checkmarks"></span>-->
-<!--                      </label>-->
-<!--                    </td>-->
-<!--                    <td>-->
-<!--                      <div class="productimgname">-->
-<!--                        <a href="javascript:void(0);" class="product-img stock-img">-->
-<!--                          <img-->
-<!--                            :src="require(`@/assets/img/products/${item.Image}`)"-->
-<!--                            alt="product"-->
-<!--                          />-->
-<!--                        </a>-->
-<!--                        <a href="javascript:void(0);">{{ item.Title }} </a>-->
-<!--                      </div>-->
-<!--                    </td>-->
-<!--                    <td>-->
-<!--                      <a href="javascript:void(0);">{{ item.SKU }}</a>-->
-<!--                    </td>-->
-<!--                    <td>{{ item.Manufactured }}</td>-->
-<!--                    <td>{{ item.Expired }}</td>-->
-<!--                    <td class="action-table-data">-->
-<!--                      <div class="edit-delete-action">-->
-<!--                        <a class="me-2 p-2" href="javascript:void(0);">-->
-<!--                          <vue-feather type="edit" class="feather-edit"></vue-feather>-->
-<!--                        </a>-->
-<!--                        <a-->
-<!--                          class="confirm-text p-2"-->
-<!--                          @click="showConfirmation"-->
-<!--                          href="javascript:void(0);"-->
-<!--                        >-->
-<!--                          <vue-feather-->
-<!--                            type="trash-2"-->
-<!--                            class="feather-trash-2"-->
-<!--                          ></vue-feather>-->
-<!--                        </a>-->
-<!--                      </div>-->
-<!--                    </td>-->
-<!--                  </tr>-->
-<!--                </tbody>-->
-<!--              </table>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
+          <div class="col-xl-4 col-sm-12 col-12 d-flex">
+            <div class="card flex-fill default-cover">
+              <div class="card-header">
+                <h4 class="card-title">Product Sales ChiliOil</h4>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive dataview">
+                  <table class="table dashboard-expired-products">
+                    <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in product_sales_chilioil" :key="item.product_id">
+                      <td>
+                        <div class="productimgname">
+                          <a href="javascript:void(0);" class="product-img stock-img">
+                            <img
+                                :src="item.product?.image_url"
+                                alt="product"
+                            />
+                          </a>
+                          <a href="javascript:void(0);">{{ item.product?.name }} </a>
+                        </div>
+                      </td>
+                      <td>{{ item.total_qty }}</td>
+                      <td>{{ formatIDR(item.total_sales) }}</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-sm-12 col-12 d-flex">
+            <div class="card flex-fill default-cover">
+              <div class="card-header">
+                <h4 class="card-title">Product Sales Sate</h4>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive dataview">
+                  <table class="table dashboard-expired-products">
+                    <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in product_sales_sate" :key="item.product_id">
+                      <td>
+                        <div class="productimgname">
+                          <a href="javascript:void(0);" class="product-img stock-img">
+                            <img
+                                :src="item.product?.image_url"
+                                alt="product"
+                            />
+                          </a>
+                          <a href="javascript:void(0);">{{ item.product?.name }} </a>
+                        </div>
+                      </td>
+                      <td>{{ item.total_qty }}</td>
+                      <td>{{ formatIDR(item.total_sales) }}</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-sm-12 col-12 d-flex">
+            <div class="card flex-fill default-cover">
+              <div class="card-header">
+                <h4 class="card-title">Product Sales Minuman</h4>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive dataview">
+                  <table class="table dashboard-expired-products">
+                    <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in product_sales_minuman" :key="item.product_id">
+                      <td>
+                        <div class="productimgname">
+                          <a href="javascript:void(0);" class="product-img stock-img">
+                            <img
+                                :src="item.product?.image_url"
+                                alt="product"
+                            />
+                          </a>
+                          <a href="javascript:void(0);">{{ item.product?.name }} </a>
+                        </div>
+                      </td>
+                      <td>{{ item.total_qty }}</td>
+                      <td>{{ formatIDR(item.total_sales) }}</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -321,6 +389,7 @@ import { basicAreaChart } from "./data";
 import AdminProducts from "@/assets/json/admin-products.json";
 import AdminExpired from "@/assets/json/admin-expired.json";
 import Swal from "sweetalert2";
+import { mapState, mapActions } from 'vuex';
 
 export default {
   data() {
@@ -330,7 +399,24 @@ export default {
       AdminExpired: AdminExpired,
     };
   },
+  computed: {
+    ...mapState('dashboard', ['summary', 'product_sales_sate', 'product_sales_chilioil', 'product_sales_minuman', 'store_sales'])
+  },
   methods: {
+    ...mapActions('dashboard', ['fetchSummary', 'fetchProductSales', 'fetchStoreSales']),
+    formatIDR(value) {
+      if (value === undefined || value === null) return 'Rp 0,00';
+
+      // Convert to number if it's a string
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+
+      // Format the number to Indonesian Rupiah format
+      return 'Rp ' + num.toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+
     showConfirmation() {
       Swal.fire({
         title: "Are you sure?",
@@ -355,5 +441,12 @@ export default {
       });
     },
   },
+  mounted() {
+    this.fetchSummary();
+    this.fetchProductSales({ store_id: 1 });
+    this.fetchProductSales({ store_id: 2 });
+    this.fetchProductSales({ store_id: 3 });
+    this.fetchStoreSales()
+  }
 };
 </script>

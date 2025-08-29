@@ -13,7 +13,7 @@ const basicAreaChart = {
       },
     },
 
-    colors: ["#28C76F", "#EA5455"],
+    colors: ["#28C76F", "#EA5455", "#F5D010FF"],
     dataLabels: {
       enabled: false,
     },
@@ -56,12 +56,16 @@ const basicAreaChart = {
   },
   series: [
     {
-      name: "Sales",
-      data: [50, 45, 60, 70, 50, 45, 60, 70],
+      name: "ChiliOil",
+      data: [20, 30, 40, 50, 60, 70, 80, 90],
     },
     {
-      name: "Purchase",
-      data: [-21, -54, -45, -35, -21, -54, -45, -35],
+      name: "Sate Nagihin",
+      data: [20, 15, 25, 35, 45, 55, 65, 75],
+    },
+    {
+      name: "Minuman",
+      data: [20, 10, 10, 30, 13, 12, 11, 17],
     },
   ],
 };

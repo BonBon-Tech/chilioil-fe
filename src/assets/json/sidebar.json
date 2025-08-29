@@ -58,6 +58,14 @@
         "showSubRoute": false
       },
       {
+        "menuValue": "Sales Online",
+        "icon": "shopping-cart",
+        "route": "/sales-online/sales-list",
+        "active_link" : "/sales-online/sales-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
         "menuValue": "POS",
         "icon": "hard-drive",
         "route": "/sales/pos",

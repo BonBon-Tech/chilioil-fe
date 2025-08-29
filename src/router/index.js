@@ -159,7 +159,9 @@ import Delete_Account from '@/views/pages/users/delete-account.vue'
 import FileManager from '@/views/pages/application/files/file-manager.vue'
 import Profile from '@/views/pages/pages/pos-profile.vue'
 import Sales from '@/views/pages/sales/pos-sales.vue'
+import SalesOnline from '@/views/pages/sales-online/pos-sales-online.vue'
 import SalesList from '@/views/pages/sales/sales-list.vue'
+import SalesListOnline from '@/views/pages/sales-online/sales-list-online.vue'
 import InvoiceReport from '@/views/pages/sales/invoice-report.vue'
 import SalesReturns from '@/views/pages/sales/sales-returns.vue'
 import Quotation_List from '@/views/pages/sales/quotation-list.vue'
@@ -223,6 +225,7 @@ import Storage_Settings from '@/views/pages/settings/other-settings/storage-sett
 import Ban_Ip_Address from '@/views/pages/settings/other-settings/ban-ip-address.vue'
 import FileManagerDeleted from '@/views/pages/application/files/file-manager-deleted.vue'
 import POS from '@/views/pages/sales/sales-pos.vue'
+import POSOnline from '@/views/pages/sales-online/sales-pos-online.vue'
 import Coupons from '@/views/pages/promo/pos-coupons.vue'
 import Pages from '@/views/pages/pages/pos-pages.vue'
 import Application from '@/views/pages/application/pos-application.vue'
@@ -660,6 +663,16 @@ const routes = [
       { path: "sales-returns", component: SalesReturns, meta: { isAuth: true, access: ['admin'] } },
       { path: "pos", component: POS, meta: { isAuth: true, access: ['admin', 'staff'] } },
       { path: "quotation-list", component: Quotation_List, meta: { isAuth: true, access: ['admin'] } },
+    ]
+  },
+  {
+    path: '/sales-online',
+    component: SalesOnline,
+    children: [
+      { path: '', redirect: '/sales-online/sales-list' },
+      { path: "sales-list", component: SalesListOnline, meta: { isAuth: true, access: ['admin'] } },
+      { path: "pos", component: POSOnline, meta: { isAuth: true, access: ['admin'] } },
+      { path: "detail/:id", component: () => import('@/views/pages/sales-online/sales-pos-online-detail.vue'), meta: { isAuth: true, access: ['admin'] } },
     ]
   },
 ];
