@@ -295,7 +295,7 @@
                 <td>{{ transaction.id }}</td>
                 <td>{{ transaction.code }}</td>
                 <td>{{ transaction.customer_name }}</td>
-                <td>{{ formatDate(transaction.created_at) }}</td>
+                <td>{{ formatDate(transaction.date) }}</td>
                 <td>{{ transaction.total_item }}</td>
                 <td>
                   <span :class="getTypeClass(transaction.type)">{{ transaction.type }}</span>
@@ -592,8 +592,6 @@ export default {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
       });
     },
 
