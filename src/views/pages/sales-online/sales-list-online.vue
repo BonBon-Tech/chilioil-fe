@@ -253,6 +253,10 @@
           </div>
           <!-- /Filter -->
 
+          <div class="container-fluid mb-3">
+            <h5>Daily Transactions: <b>{{ formatCurrency(total_sales) }}</b></h5>
+          </div>
+
           <!-- Loading state -->
           <div v-if="isLoading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
@@ -284,8 +288,7 @@
                 <th>Items</th>
                 <th>Type</th>
                 <th>Payment</th>
-                <th>Sub Total</th>
-                <th>Total</th>
+                <th>Online Revenue</th>
                 <th>Status</th>
                 <th class="text-center">Action</th>
               </tr>
@@ -301,8 +304,7 @@
                   <span :class="getTypeClass(transaction.type)">{{ transaction.type }}</span>
                 </td>
                 <td>{{ transaction.payment_type }}</td>
-                <td>{{ formatCurrency(transaction.sub_total) }}</td>
-                <td>{{ formatCurrency(transaction.total) }}</td>
+                <td>{{ formatCurrency(transaction.online_transaction_revenue) }}</td>
                 <td>
                   <span :class="getStatusClass(transaction.status)">{{ transaction.status }}</span>
                 </td>
@@ -428,7 +430,8 @@ export default {
       'pagination',
       'isLoading',
       'error',
-      'filters'
+      'filters',
+      'total_sales'
     ]),
 
     // Calculate visible page numbers for pagination
@@ -479,7 +482,8 @@ export default {
       'resetFilters',
       'changePerPage',
       'changePage',
-      'getTransaction'
+      'getTransaction',
+      'fetchTotal'
     ]),
 
     toggleCollapse() {
@@ -635,6 +639,7 @@ export default {
   mounted() {
     // Fetch transactions when component is mounted
     this.fetchTransactions({ perPage: this.perPage });
+    this.fetchTotal()
 
     // Synchronize local form state with store state
     this.searchQuery = this.filters.search || '';

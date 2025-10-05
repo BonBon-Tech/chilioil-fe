@@ -113,6 +113,8 @@ import Stock from '@/views/pages/stock/pos-stock.vue'
 import ManageStocks from '@/views/pages/stock/manage-stocks.vue'
 import StockAdjustment from '@/views/pages/stock/stock-adjustment.vue'
 import Inventory from '@/views/pages/inventory/pos-inventory.vue'
+import Others from '@/views/pages/others/others.vue'
+import Wifi_Credentials from '@/views/pages/others/wifi-credentials.vue'
 import Low_Stocks from '@/views/pages/inventory/low-stocks/low-stocks.vue'
 import Category_List from '@/views/pages/inventory/category-list.vue'
 import Sub_Categories from '@/views/pages/inventory/sub-categories.vue'
@@ -436,6 +438,13 @@ const routes = [
       { path: "roles-permissions", component: Roles_Permissions },
       { path: "permissions", component: Permissions },
       { path: "delete-account", component: Delete_Account },
+    ]
+  },
+  {
+    path: '/others',
+    component: Others,
+    children: [
+      { path: "wifi-credentials", component: Wifi_Credentials },
     ]
   },
   {

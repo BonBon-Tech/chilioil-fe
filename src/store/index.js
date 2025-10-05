@@ -12,6 +12,7 @@ import employee from './employee';
 import transaction from './transaction';
 import sales from './sales';
 import salesOnline from './sales-online';
+import wifiCredential from './wifi-credential';
 import dashboard from './dashboard'; // Import the new dashboard module
 
 const store = createStore({
@@ -29,7 +30,8 @@ const store = createStore({
         transaction,
         sales,
         salesOnline,
-        dashboard // Add the new dashboard module
+        dashboard, // Add the new dashboard
+        wifiCredential
     },
 });
 
