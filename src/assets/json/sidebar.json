@@ -135,5 +135,20 @@
         "showSubRoute": false
       }
     ]
+  },
+  {
+    "tittle": "Others",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Wifi Credentials",
+        "icon": "wifi",
+        "route": "/others/wifi-credentials",
+        "active_link" : "/others/wifi-credentials",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
   }
 ]

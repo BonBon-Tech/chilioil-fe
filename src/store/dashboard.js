@@ -6,6 +6,7 @@ export default {
         summary: {
             expense_total: 0,
             transaction_total: 0,
+            online_transaction_total: 0,
             user_count: 0,
             product_count: 0
         },
@@ -13,6 +14,7 @@ export default {
         product_sales_sate: [],
         product_sales_minuman: [],
         store_sales: [],
+        store_online_sales: [],
         loading: false,
         error: null
     },
@@ -34,6 +36,9 @@ export default {
         },
         SET_STORE_SALES(state, data) {
             state.store_sales = data;
+        },
+        SET_STORE_ONLINE_SALES(state, data) {
+            state.store_online_sales = data;
         },
         SET_ERROR(state, error) {
             state.error = error;
@@ -96,6 +101,34 @@ export default {
                 dispatch('loading/hideLoading', null, { root: true });
             }
         },
+        async fetchStoreOnlineSales({ commit, dispatch }) {
+            commit('SET_LOADING', true);
+            commit('SET_ERROR', null);
+            try {
+                dispatch('loading/showLoading', null, { root: true });
+
+                const response = await requestWithAlert(
+                    'get',
+                    '/api/v1/dashboard/store-online-sales',
+                    {},
+                    {},
+                    {
+                        error: true,
+                        success: false,
+                        errorMessage: 'Failed to load dashboard data'
+                    }
+                );
+
+                commit('SET_STORE_ONLINE_SALES', response.data.data);
+                return response.data;
+            } catch (error) {
+                commit('SET_ERROR', error.message || 'Failed to fetch dashboard store sales');
+                throw error;
+            } finally {
+                commit('SET_LOADING', false);
+                dispatch('loading/hideLoading', null, { root: true });
+            }
+        },
         async fetchProductSales({ commit, dispatch }, { store_id = 1 } = {}) {
             commit('SET_LOADING', true);
             commit('SET_ERROR', null);
@@ -143,5 +176,6 @@ export default {
         product_sales_sate: state => state.product_sales_sate,
         product_sales_minuman: state => state.product_sales_minuman,
         store_sales: state => state.store_sales,
+        store_online_sales: state => state.store_online_sales,
     }
 };

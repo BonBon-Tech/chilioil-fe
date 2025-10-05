@@ -5,7 +5,7 @@
     <div class="page-wrapper" style="text-align: center !important;">
       <div class="content">
         <div class="row">
-          <div class="col-xl-6 col-sm-6 col-12 d-flex">
+          <div class="col-xl-4 col-sm-4 col-12 d-flex">
             <div class="dash-widget w-100">
               <div class="dash-widgetimg">
                 <span><img src="@/assets/img/icons/dash1.svg" alt="img" /></span>
@@ -27,7 +27,7 @@
               </div>
             </div>
           </div>
-          <div class="col-xl-6 col-sm-6 col-12 d-flex">
+          <div class="col-xl-4 col-sm-4 col-12 d-flex">
             <div class="dash-widget dash1 w-100">
               <div class="dash-widgetimg">
                 <span><img src="@/assets/img/icons/dash2.svg" alt="img" /></span>
@@ -46,6 +46,28 @@
                   />
                 </h5>
                 <h6>Total Transaction</h6>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-sm-4 col-12 d-flex">
+            <div class="dash-widget dash1 w-100">
+              <div class="dash-widgetimg">
+                <span><img src="@/assets/img/icons/dash2.svg" alt="img" /></span>
+              </div>
+              <div class="dash-widgetcontent">
+                <h5>
+                  Rp
+                  <vue3-autocounter
+                      class="counters"
+                      ref="counter"
+                      :startAmount="0"
+                      :delay="1"
+                      :endAmount="summary.online_transaction_total"
+                      :duration="1"
+                      :autoinit="true"
+                  />
+                </h5>
+                <h6>Total Online Transaction</h6>
               </div>
             </div>
           </div>
@@ -68,7 +90,31 @@
                         :autoinit="true"
                     />
                   </h5>
-                  <h6>Total Sales {{ store.store_name }}</h6>
+                  <h6>Offline Sales {{ store.store_name }}</h6>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-for="store in store_online_sales" :key="store.store_id">
+            <div class="col-xl-4 col-sm-4 col-12 d-flex">
+              <div class="dash-widget dash1 w-100">
+                <div class="dash-widgetimg">
+                  <span><img src="@/assets/img/icons/dash2.svg" alt="img" /></span>
+                </div>
+                <div class="dash-widgetcontent">
+                  <h5>
+                    Rp
+                    <vue3-autocounter
+                        class="counters"
+                        ref="counter"
+                        :startAmount="0"
+                        :delay="1"
+                        :endAmount="store.total_sales"
+                        :duration="1"
+                        :autoinit="true"
+                    />
+                  </h5>
+                  <h6>Online Sales {{ store.store_name }}</h6>
                 </div>
               </div>
             </div>
@@ -279,7 +325,6 @@
                     <tr>
                       <th>Product</th>
                       <th>Qty</th>
-                      <th>Total</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -296,7 +341,6 @@
                         </div>
                       </td>
                       <td>{{ item.total_qty }}</td>
-                      <td>{{ formatIDR(item.total_sales) }}</td>
                     </tr>
                     </tbody>
                   </table>
@@ -316,7 +360,6 @@
                     <tr>
                       <th>Product</th>
                       <th>Qty</th>
-                      <th>Total</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -333,7 +376,6 @@
                         </div>
                       </td>
                       <td>{{ item.total_qty }}</td>
-                      <td>{{ formatIDR(item.total_sales) }}</td>
                     </tr>
                     </tbody>
                   </table>
@@ -353,7 +395,6 @@
                     <tr>
                       <th>Product</th>
                       <th>Qty</th>
-                      <th>Total</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -370,7 +411,6 @@
                         </div>
                       </td>
                       <td>{{ item.total_qty }}</td>
-                      <td>{{ formatIDR(item.total_sales) }}</td>
                     </tr>
                     </tbody>
                   </table>
@@ -400,10 +440,10 @@ export default {
     };
   },
   computed: {
-    ...mapState('dashboard', ['summary', 'product_sales_sate', 'product_sales_chilioil', 'product_sales_minuman', 'store_sales'])
+    ...mapState('dashboard', ['summary', 'product_sales_sate', 'product_sales_chilioil', 'product_sales_minuman', 'store_sales', 'store_online_sales'])
   },
   methods: {
-    ...mapActions('dashboard', ['fetchSummary', 'fetchProductSales', 'fetchStoreSales']),
+    ...mapActions('dashboard', ['fetchSummary', 'fetchProductSales', 'fetchStoreSales', 'fetchStoreOnlineSales']),
     formatIDR(value) {
       if (value === undefined || value === null) return 'Rp 0,00';
 
@@ -447,6 +487,7 @@ export default {
     this.fetchProductSales({ store_id: 2 });
     this.fetchProductSales({ store_id: 3 });
     this.fetchStoreSales()
+    this.fetchStoreOnlineSales()
   }
 };
 </script>

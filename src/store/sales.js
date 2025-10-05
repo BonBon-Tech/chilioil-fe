@@ -8,6 +8,7 @@ export default {
         transactions: [],
         transaction: null,
         pagination: null,
+        total_sales: 0,
         filters: {
             search: '',
             code: '',
@@ -48,6 +49,9 @@ export default {
         setSelectedTransaction(state, transaction) {
           state.transaction = transaction;
         },
+        setTotal(state, total) {
+          state.total_sales = total;
+        },
         resetFilters(state) {
             // Ensure we're completely resetting all filter values to empty strings
             state.filters = {
@@ -76,7 +80,7 @@ export default {
 
             try {
                 // Build query parameters
-                let url = `/api/v1/transactions?page=${page}&per_page=${perPage}`;
+                let url = `/api/v1/transactions?page=${page}&per_page=${perPage}&types[]=OFFLINE`;
 
                 // Add filter params if they have values
                 Object.keys(state.filters).forEach(key => {
@@ -109,6 +113,35 @@ export default {
                 return { success: true, data: data };
             } catch (error) {
                 commit('setError', error.response?.data?.message || error.message || 'Failed to fetch transactions');
+                return { success: false, error };
+            } finally {
+                commit('setLoading', false);
+            }
+        },
+
+        async fetchTotal({ commit, state }) {
+            commit('setLoading', true);
+            commit('clearError');
+
+            try {
+                // Build query parameters
+                let url = `/api/v1/dashboard/store-daily-offline-sales`;
+
+                const response = await requestWithAlert(
+                    'get',
+                    url,
+                    {},
+                    {},
+                    { error: true }
+                );
+
+                const { data } = response.data;
+
+                commit('setTotal', data.total || []);
+
+                return { success: true, data: data.total };
+            } catch (error) {
+                commit('setError', error.response?.data?.message || error.message || 'Failed to fetch total daily transactions');
                 return { success: false, error };
             } finally {
                 commit('setLoading', false);
@@ -165,6 +198,7 @@ export default {
         pagination: state => state.pagination,
         isLoading: state => state.loading,
         error: state => state.error,
-        filters: state => state.filters
+        filters: state => state.filters,
+        total_sales: state => state.total_sales
     }
 };
